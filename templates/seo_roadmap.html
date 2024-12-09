@@ -1,0 +1,262 @@
+{% extends "base_cliente.html" %}
+
+{% block title %}SEO Roadmap - {{ cliente.nome }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <h1 class="h3 mb-0">SEO Roadmap</h1>
+                <div class="progress flex-grow-1" style="width: 200px; height: 8px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ '%.1f'|format(progresso_geral) }}%">
+                        <span class="visually-hidden">{{ '%.1f'|format(progresso_geral) }}%</span>
+                    </div>
+                </div>
+                <span class="text-muted">{{ '%.1f'|format(progresso_geral) }}%</span>
+            </div>
+        </div>
+
+        {% for categoria, etapas in etapas_por_categoria.items() %}
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center">
+                <h5 class="card-title mb-0">
+                    {% if categoria == 'tecnico' %}
+                        <i class="bi bi-gear-fill me-2"></i>SEO Técnico
+                    {% elif categoria == 'pesquisa' %}
+                        <i class="bi bi-search me-2"></i>Pesquisa e Análise
+                    {% elif categoria == 'conteudo' %}
+                        <i class="bi bi-file-text-fill me-2"></i>Conteúdo
+                    {% elif categoria == 'links' %}
+                        <i class="bi bi-link-45deg me-2"></i>Link Building
+                    {% elif categoria == 'monitoramento' %}
+                        <i class="bi bi-graph-up me-2"></i>Monitoramento
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for etapa in etapas %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <h6 class="mb-0">{{ etapa.titulo }}</h6>
+                                {% if etapa.status == 'concluida' %}
+                                <span class="badge bg-success">Concluída</span>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-primary" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#novaTarefaModal"
+                                        data-etapa-id="{{ etapa.id }}"
+                                        data-etapa-titulo="{{ etapa.titulo }}">
+                                    <i class="bi bi-plus-lg"></i> Nova Tarefa
+                                </button>
+                                {% if etapa.status != 'concluida' %}
+                                <button class="btn btn-sm btn-success" 
+                                        onclick="atualizarProgressoSEO({{ cliente.id }}, {{ etapa.id }}, 'concluida')">
+                                    <i class="bi bi-check-lg"></i> Concluir Etapa
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Lista de tarefas -->
+                        {% if etapa.tarefas %}
+                        <div class="list-group list-group-flush">
+                            {% for tarefa in etapa.tarefas %}
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <h6 class="mb-1">{{ tarefa.titulo }}</h6>
+                                            {% if tarefa.status == 'concluida' %}
+                                            <span class="badge bg-success">Concluída</span>
+                                            {% endif %}
+                                        </div>
+                                        {% if tarefa.responsavel %}
+                                        <small class="text-muted">Responsável: {{ tarefa.responsavel }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="btn-group">
+                                        {% if tarefa.status != 'concluida' %}
+                                        <button class="btn btn-sm btn-outline-success"
+                                                onclick="atualizarStatusTarefa({{ cliente.id }}, {{ tarefa.id }}, 'concluida')">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                        {% endif %}
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                onclick="removerTarefa({{ cliente.id }}, {{ tarefa.id }})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% if tarefa.descricao %}
+                                <p class="mb-1 mt-2">{{ tarefa.descricao | nl2br }}</p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted mb-0">Nenhuma tarefa cadastrada</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Modal Nova Tarefa -->
+<div class="modal fade" id="novaTarefaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nova Tarefa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="novaTarefaForm">
+                <div class="modal-body">
+                    <input type="hidden" id="etapa_id" name="etapa_seo_id">
+                    <div class="mb-3">
+                        <label for="titulo" class="form-label">Título</label>
+                        <input type="text" class="form-control" id="titulo" name="titulo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="responsavel" class="form-label">Responsável</label>
+                        <select class="form-select" id="responsavel" name="responsavel_id">
+                            <option value="">Selecione um responsável</option>
+                            {% for membro in membros %}
+                            <option value="{{ membro.id }}">{{ membro.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="criarTarefa({{ cliente.id }})">Criar Tarefa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Atualizar campos do modal quando aberto
+document.getElementById('novaTarefaModal').addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget;
+    var etapaId = button.getAttribute('data-etapa-id');
+    var etapaTitulo = button.getAttribute('data-etapa-titulo');
+    
+    document.getElementById('etapa_id').value = etapaId;
+    document.querySelector('.modal-title').textContent = 'Nova Tarefa - ' + etapaTitulo;
+});
+
+// Criar nova tarefa
+function criarTarefa(clienteId) {
+    var form = document.getElementById('novaTarefaForm');
+    var formData = new FormData(form);
+    var data = Object.fromEntries(formData.entries());
+    
+    fetch(`/cliente/${clienteId}/tarefas`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Erro ao criar tarefa');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erro ao criar tarefa');
+    });
+}
+
+// Atualizar status da tarefa
+function atualizarStatusTarefa(clienteId, tarefaId, status) {
+    fetch(`/cliente/${clienteId}/tarefas/${tarefaId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Erro ao atualizar status');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erro ao atualizar status');
+    });
+}
+
+// Atualizar progresso da etapa SEO
+function atualizarProgressoSEO(clienteId, etapaId, status) {
+    fetch(`/cliente/${clienteId}/seo-progresso/${etapaId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Erro ao atualizar progresso');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erro ao atualizar progresso');
+    });
+}
+
+// Remover tarefa
+function removerTarefa(clienteId, tarefaId) {
+    if (!confirm('Tem certeza que deseja remover esta tarefa?')) {
+        return;
+    }
+    
+    fetch(`/cliente/${clienteId}/tarefas/${tarefaId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Erro ao remover tarefa');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erro ao remover tarefa');
+    });
+}
+</script>
+{% endblock %}

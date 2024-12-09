@@ -1,0 +1,175 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="page-title">Meus Clientes</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoClienteModal">
+            <i class="bi bi-plus-lg"></i>
+            <span>Novo Cliente</span>
+        </button>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col" style="width: 40%">Nome do Cliente</th>
+                <th scope="col" style="width: 35%">Website</th>
+                <th scope="col" style="width: 25%" class="text-end">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if clientes %}
+                {% for cliente in clientes %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="client-avatar">{{ cliente.nome[:2].upper() }}</div>
+                            <div class="ms-3">
+                                <h6 class="mb-0">{{ cliente.nome }}</h6>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if cliente.website %}
+                        <a href="{{ cliente.website }}" target="_blank" class="text-decoration-none text-secondary">
+                            <i class="bi bi-globe2 me-2"></i>{{ cliente.website }}
+                        </a>
+                        {% else %}
+                        <span class="text-muted">Não informado</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('cliente_detalhes', cliente_id=cliente.id) }}" class="btn btn-light btn-sm">
+                                <i class="bi bi-eye-fill"></i>
+                                <span>Visualizar</span>
+                            </a>
+                            <button class="btn btn-light btn-sm" onclick="editarCliente({{ cliente.id }}, '{{ cliente.nome }}', '{{ cliente.website }}', '{{ cliente.descricao }}')">
+                                <i class="bi bi-pencil-fill"></i>
+                                <span>Editar</span>
+                            </button>
+                            <button class="btn btn-light btn-sm text-danger" onclick="excluirCliente({{ cliente.id }})">
+                                <i class="bi bi-trash-fill"></i>
+                                <span>Excluir</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="3">
+                        <div class="empty-state">
+                            <img src="{{ url_for('static', filename='images/empty-state.svg') }}" alt="Sem clientes">
+                            <h3>Nenhum cliente encontrado</h3>
+                            <p>Comece adicionando seu primeiro cliente!</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoClienteModal">
+                                <i class="bi bi-plus-lg me-2"></i>Adicionar Cliente
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Novo Cliente -->
+<div class="modal fade" id="novoClienteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Novo Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('novo_cliente') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome do Cliente</label>
+                        <input type="text" class="form-control" id="nome" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="website" class="form-label">Website</label>
+                        <input type="url" class="form-control" id="website" name="website" placeholder="https://">
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Cliente -->
+<div class="modal fade" id="editarClienteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formEditarCliente" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editNome" class="form-label">Nome do Cliente</label>
+                        <input type="text" class="form-control" id="editNome" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editWebsite" class="form-label">Website</label>
+                        <input type="url" class="form-control" id="editWebsite" name="website" placeholder="https://">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDescricao" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="editDescricao" name="descricao" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function editarCliente(id, nome, website, descricao) {
+    document.getElementById('editNome').value = nome;
+    document.getElementById('editWebsite').value = website;
+    document.getElementById('editDescricao').value = descricao;
+    document.getElementById('formEditarCliente').action = `/cliente/${id}/editar`;
+    new bootstrap.Modal(document.getElementById('editarClienteModal')).show();
+}
+
+function excluirCliente(id) {
+    if (confirm('Tem certeza que deseja excluir este cliente?')) {
+        fetch(`/cliente/${id}/excluir`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Erro ao excluir cliente');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

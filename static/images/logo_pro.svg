@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Círculo de fundo -->
+    <circle cx="256" cy="256" r="248" fill="url(#gradient)" stroke="#2fc6f6" stroke-width="16"/>
+    
+    <!-- Seta principal -->
+    <path d="M256 120L376 240H136L256 120Z" fill="white"/>
+    
+    <!-- Seta secundária -->
+    <path d="M256 220L336 300H176L256 220Z" fill="white" fill-opacity="0.8"/>
+    
+    <!-- Seta terciária -->
+    <path d="M256 320L316 380H196L256 320Z" fill="white" fill-opacity="0.6"/>
+    
+    <!-- Gradiente -->
+    <defs>
+        <linearGradient id="gradient" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" style="stop-color:#2fc6f6"/>
+            <stop offset="100%" style="stop-color:#1ab8eb"/>
+        </linearGradient>
+    </defs>
+</svg>

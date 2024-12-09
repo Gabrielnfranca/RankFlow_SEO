@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block page_title %}
+<h1 class="page-title mb-0">Editar Cliente</h1>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Editar Cliente</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome do Cliente *</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="nome" 
+                               name="nome" 
+                               value="{{ cliente.nome }}"
+                               required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="website" class="form-label">Website</label>
+                        <input type="url" 
+                               class="form-control" 
+                               id="website" 
+                               name="website"
+                               value="{{ cliente.website or '' }}"
+                               placeholder="https://exemplo.com">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <textarea class="form-control" 
+                                  id="descricao" 
+                                  name="descricao" 
+                                  rows="3">{{ cliente.descricao or '' }}</textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

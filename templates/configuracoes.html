@@ -1,0 +1,377 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Configurações{% endblock %}
+
+{% block extra_css %}
+<style>
+.config-header {
+    background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+    padding: 2rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.config-header h1 {
+    color: white;
+    margin: 0;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.config-card {
+    background: white;
+    border-radius: 1rem;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.config-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.config-card .card-header {
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    color: white;
+    border: none;
+    padding: 1.5rem;
+}
+
+.config-card .card-header h5 {
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.config-card .card-header i {
+    font-size: 1.25rem;
+}
+
+.config-card .card-body {
+    padding: 2rem;
+}
+
+.form-control, .form-select {
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #6366F1;
+    box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.1);
+}
+
+.form-check-input:checked {
+    background-color: #6366F1;
+    border-color: #6366F1;
+}
+
+.btn-gradient {
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    border: none;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.notification-card {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateX(150%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+}
+
+.notification-card.show {
+    transform: translateX(0);
+}
+
+.notification-card.success {
+    border-left: 4px solid #10B981;
+}
+
+.notification-card.error {
+    border-left: 4px solid #EF4444;
+}
+
+@media (max-width: 768px) {
+    .config-header {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .config-card .card-header,
+    .config-card .card-body {
+        padding: 1.25rem;
+    }
+    
+    .btn-gradient {
+        width: 100%;
+    }
+    
+    .notification-card {
+        left: 1rem;
+        right: 1rem;
+        transform: translateY(-150%);
+    }
+    
+    .notification-card.show {
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="config-header">
+    <h1><i class="bi bi-gear-fill me-3"></i>Configurações</h1>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8 mx-auto">
+        <!-- Configurações do Perfil -->
+        <div class="config-card">
+            <div class="card-header">
+                <h5>
+                    <i class="bi bi-person-circle"></i>
+                    Perfil
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="perfilForm">
+                    <div class="mb-4">
+                        <label for="nome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="nome" name="nome" value="{{ current_user.nome }}" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-gradient">Salvar Alterações</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Alterar Senha -->
+        <div class="config-card">
+            <div class="card-header">
+                <h5>
+                    <i class="bi bi-shield-lock"></i>
+                    Segurança
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="senhaForm">
+                    <div class="mb-4">
+                        <label for="senha_atual" class="form-label">Senha Atual</label>
+                        <input type="password" class="form-control" id="senha_atual" name="senha_atual" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="nova_senha" class="form-label">Nova Senha</label>
+                        <input type="password" class="form-control" id="nova_senha" name="nova_senha" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="confirmar_senha" class="form-label">Confirmar Nova Senha</label>
+                        <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" required>
+                    </div>
+                    <button type="submit" class="btn btn-gradient">Alterar Senha</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Preferências -->
+        <div class="config-card">
+            <div class="card-header">
+                <h5>
+                    <i class="bi bi-sliders"></i>
+                    Preferências
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="preferenciasForm">
+                    <div class="mb-4">
+                        <label class="form-label mb-3">Notificações por Email</label>
+                        <div class="d-flex flex-column gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notif_tarefas" name="notif_tarefas" {% if current_user.notif_tarefas %}checked{% endif %}>
+                                <label class="form-check-label" for="notif_tarefas">
+                                    Receber notificações de novas tarefas
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notif_prazos" name="notif_prazos" {% if current_user.notif_prazos %}checked{% endif %}>
+                                <label class="form-check-label" for="notif_prazos">
+                                    Receber lembretes de prazos
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="tema" class="form-label">Tema da Interface</label>
+                        <select class="form-select" id="tema" name="tema">
+                            <option value="claro" {% if current_user.tema == 'claro' %}selected{% endif %}>Claro</option>
+                            <option value="escuro" {% if current_user.tema == 'escuro' %}selected{% endif %}>Escuro</option>
+                            <option value="sistema" {% if current_user.tema == 'sistema' %}selected{% endif %}>Seguir Sistema</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-gradient">Salvar Preferências</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification -->
+<div id="notification" class="notification-card">
+    <div class="d-flex align-items-center gap-3">
+        <i class="bi"></i>
+        <span class="message"></span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showNotification(message, type = 'success') {
+    const notification = document.getElementById('notification');
+    const icon = notification.querySelector('.bi');
+    const messageEl = notification.querySelector('.message');
+    
+    // Reset classes
+    notification.classList.remove('success', 'error');
+    icon.classList.remove('bi-check-circle-fill', 'bi-x-circle-fill');
+    
+    // Add new classes
+    notification.classList.add(type);
+    icon.classList.add(type === 'success' ? 'bi-check-circle-fill' : 'bi-x-circle-fill');
+    
+    // Set message
+    messageEl.textContent = message;
+    
+    // Show notification
+    notification.classList.add('show');
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+// Atualizar perfil
+document.getElementById('perfilForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    var data = Object.fromEntries(formData.entries());
+    
+    fetch('/configuracoes/perfil', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Perfil atualizado com sucesso!');
+        } else {
+            showNotification(data.error || 'Erro ao atualizar perfil', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Erro ao atualizar perfil', 'error');
+    });
+});
+
+// Alterar senha
+document.getElementById('senhaForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    var data = Object.fromEntries(formData.entries());
+    
+    if (data.nova_senha !== data.confirmar_senha) {
+        showNotification('As senhas não coincidem', 'error');
+        return;
+    }
+    
+    fetch('/configuracoes/senha', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Senha alterada com sucesso!');
+            this.reset();
+        } else {
+            showNotification(data.error || 'Erro ao alterar senha', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Erro ao alterar senha', 'error');
+    });
+});
+
+// Atualizar preferências
+document.getElementById('preferenciasForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    var data = Object.fromEntries(formData.entries());
+    
+    // Converter checkboxes para booleanos
+    data.notif_tarefas = !!formData.get('notif_tarefas');
+    data.notif_prazos = !!formData.get('notif_prazos');
+    
+    fetch('/configuracoes/preferencias', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Preferências atualizadas com sucesso!');
+            
+            // Atualizar tema se necessário
+            if (data.tema_alterado) {
+                window.location.reload();
+            }
+        } else {
+            showNotification(data.error || 'Erro ao atualizar preferências', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Erro ao atualizar preferências', 'error');
+    });
+});
+</script>
+{% endblock %}

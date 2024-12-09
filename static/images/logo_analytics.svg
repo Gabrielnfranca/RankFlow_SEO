@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Círculo da Lupa -->
+    <circle cx="220" cy="220" r="160" stroke="#0B5ED7" stroke-width="40" fill="none"/>
+    
+    <!-- Cabo da Lupa -->
+    <path d="M340 340L440 440" stroke="#0B5ED7" stroke-width="40" stroke-linecap="round"/>
+    
+    <!-- Gráfico dentro da lupa -->
+    <g transform="translate(120, 160)">
+        <!-- Barras -->
+        <rect x="20" y="120" width="30" height="40" fill="#0B5ED7"/>
+        <rect x="70" y="80" width="30" height="80" fill="#0B5ED7"/>
+        <rect x="120" y="40" width="30" height="120" fill="#0B5ED7"/>
+        <rect x="170" y="0" width="30" height="160" fill="#0B5ED7"/>
+        
+        <!-- Linha de Tendência -->
+        <path d="M35 100 L85 60 L135 20 L185 -20" 
+              stroke="#0B5ED7" 
+              stroke-width="8" 
+              stroke-linecap="round"/>
+    </g>
+</svg>

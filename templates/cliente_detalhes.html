@@ -1,0 +1,288 @@
+{% extends "base_cliente.html" %}
+
+{% block title %}{{ cliente.nome }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <h1 class="page-title mb-0">{{ cliente.nome }}</h1>
+            {% if cliente.website %}
+            <a href="{{ cliente.website }}" target="_blank" class="btn btn-link ms-3">
+                <i class="bi bi-box-arrow-up-right"></i>
+                {{ cliente.website }}
+            </a>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-light" type="button" data-bs-toggle="tooltip" title="Notificações">
+                <i class="bi bi-bell"></i>
+                <span class="badge bg-danger">3</span>
+            </button>
+            <button class="btn btn-light" type="button" data-bs-toggle="tooltip" title="Configurações">
+                <i class="bi bi-gear"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Status Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Posição Média</h6>
+                <div class="d-flex align-items-center">
+                    <h3 class="card-title mb-0">12.5</h3>
+                    <span class="ms-2 text-success">
+                        <i class="bi bi-arrow-up"></i>
+                        2.3
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Keywords</h6>
+                <div class="d-flex align-items-center">
+                    <h3 class="card-title mb-0">0</h3>
+                    <span class="ms-2 text-success">
+                        <i class="bi bi-arrow-up"></i>
+                        5
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Backlinks</h6>
+                <div class="d-flex align-items-center">
+                    <h3 class="card-title mb-0">45</h3>
+                    <span class="ms-2 text-success">
+                        <i class="bi bi-arrow-up"></i>
+                        12
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Score Técnico</h6>
+                <div class="d-flex align-items-center">
+                    <h3 class="card-title mb-0">85</h3>
+                    <span class="ms-2 text-success">
+                        <i class="bi bi-arrow-up"></i>
+                        3
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Workflow e Gráfico -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Workflow SEO</h5>
+            </div>
+            <div class="card-body">
+                <div class="workflow-list">
+                    <div class="workflow-item">
+                        <div class="workflow-status completed">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <div class="workflow-content">
+                            <h6>Análise Inicial</h6>
+                            <p>Avaliação do site e definição de objetivos</p>
+                        </div>
+                    </div>
+                    <div class="workflow-item">
+                        <div class="workflow-status active">
+                            <i class="bi bi-arrow-right-circle-fill"></i>
+                        </div>
+                        <div class="workflow-content">
+                            <h6>SEO Técnico</h6>
+                            <p>Otimização da estrutura e performance</p>
+                        </div>
+                    </div>
+                    <div class="workflow-item">
+                        <div class="workflow-status">
+                            <i class="bi bi-circle"></i>
+                        </div>
+                        <div class="workflow-content">
+                            <h6>Estratégia de Keywords</h6>
+                            <p>Pesquisa e planejamento de palavras-chave</p>
+                        </div>
+                    </div>
+                    <div class="workflow-item">
+                        <div class="workflow-status">
+                            <i class="bi bi-circle"></i>
+                        </div>
+                        <div class="workflow-content">
+                            <h6>Otimização de Conteúdo</h6>
+                            <p>Criação e otimização de conteúdo relevante</p>
+                        </div>
+                    </div>
+                    <div class="workflow-item">
+                        <div class="workflow-status">
+                            <i class="bi bi-circle"></i>
+                        </div>
+                        <div class="workflow-content">
+                            <h6>Link Building</h6>
+                            <p>Estratégia e aquisição de backlinks</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Evolução do Ranking</h5>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-light btn-sm active">30 dias</button>
+                    <button type="button" class="btn btn-light btn-sm">90 dias</button>
+                    <button type="button" class="btn btn-light btn-sm">1 ano</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="rankingChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notificações e Próximas Ações -->
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Notificações</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Queda de posição detectada</h6>
+                            <small class="text-muted">3 dias atrás</small>
+                        </div>
+                        <p class="mb-1">A keyword "marketing digital" caiu 5 posições</p>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Nova oportunidade de backlink</h6>
+                            <small class="text-muted">1 semana atrás</small>
+                        </div>
+                        <p class="mb-1">Site relacionado disponível para guest post</p>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Atualização técnica necessária</h6>
+                            <small class="text-muted">2 semanas atrás</small>
+                        </div>
+                        <p class="mb-1">Core Web Vitals precisam de otimização</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Próximas Ações</h5>
+                <button class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg"></i>
+                    Nova Ação
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Otimizar imagens do site</h6>
+                            <small class="text-muted">Hoje</small>
+                        </div>
+                        <p class="mb-1">Comprimir e adicionar alt text em todas as imagens</p>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Revisar meta descriptions</h6>
+                            <small class="text-muted">Amanhã</small>
+                        </div>
+                        <p class="mb-1">Atualizar descrições para melhorar CTR</p>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Análise de concorrentes</h6>
+                            <small class="text-muted">Em 3 dias</small>
+                        </div>
+                        <p class="mb-1">Identificar gaps de conteúdo e oportunidades</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializa tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Gráfico de evolução do ranking
+    var ctx = document.getElementById('rankingChart').getContext('2d');
+    var rankingChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['1 Dez', '5 Dez', '10 Dez', '15 Dez', '20 Dez', '25 Dez', '30 Dez'],
+            datasets: [{
+                label: 'Posição Média',
+                data: [15, 14, 13.5, 13, 12.8, 12.6, 12.5],
+                borderColor: 'rgb(47, 198, 246)',
+                tension: 0.4,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    reverse: true,
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Posição'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

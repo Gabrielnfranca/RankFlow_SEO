@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Grupo de elementos do gráfico -->
+    <g transform="translate(96, 96) scale(1.6)">
+        <!-- Barras principais -->
+        <rect x="20" y="180" width="30" height="60" rx="2" fill="#0B5ED7"/>
+        <rect x="70" y="140" width="30" height="100" rx="2" fill="#0B5ED7"/>
+        <rect x="120" y="100" width="30" height="140" rx="2" fill="#0B5ED7"/>
+        <rect x="170" y="60" width="30" height="180" rx="2" fill="#0B5ED7"/>
+        
+        <!-- Linha de tendência -->
+        <path d="M35 160 L85 120 L135 80 L185 40" 
+              stroke="#0B5ED7" 
+              stroke-width="6" 
+              stroke-linecap="round" 
+              stroke-linejoin="round"/>
+        
+        <!-- Pontos de dados -->
+        <circle cx="35" cy="160" r="6" fill="#0B5ED7"/>
+        <circle cx="85" cy="120" r="6" fill="#0B5ED7"/>
+        <circle cx="135" cy="80" r="6" fill="#0B5ED7"/>
+        <circle cx="185" cy="40" r="6" fill="#0B5ED7"/>
+        
+        <!-- Linhas de grade sutis -->
+        <line x1="10" y1="200" x2="200" y2="200" stroke="#0B5ED7" stroke-width="2" stroke-opacity="0.2"/>
+        <line x1="10" y1="150" x2="200" y2="150" stroke="#0B5ED7" stroke-width="2" stroke-opacity="0.2"/>
+        <line x1="10" y1="100" x2="200" y2="100" stroke="#0B5ED7" stroke-width="2" stroke-opacity="0.2"/>
+        <line x1="10" y1="50" x2="200" y2="50" stroke="#0B5ED7" stroke-width="2" stroke-opacity="0.2"/>
+    </g>
+</svg>

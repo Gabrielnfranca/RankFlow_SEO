@@ -1,0 +1,224 @@
+{% extends "base_cliente.html" %}
+
+{% block title %}SEO Técnico - {{ cliente.nome }}{% endblock %}
+
+{% block content %}
+<div class="kanban-container">
+    <!-- Header do Kanban -->
+    <div class="kanban-header mb-4">
+        <h2 class="fw-bold">SEO Técnico - {{ cliente.nome }}</h2>
+        <div class="progress mb-3" style="height: 10px;">
+            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ progress }}%;" 
+                 aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
+                {{ progress }}%
+            </div>
+        </div>
+        <div class="kanban-actions mb-3">
+            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="bi bi-funnel"></i> Filtrar
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" id="exportProgress">
+                <i class="bi bi-download"></i> Exportar Progresso
+            </button>
+        </div>
+    </div>
+
+    <!-- Kanban Board -->
+    <div class="kanban-board">
+        <!-- Coluna: A Fazer -->
+        <div class="kanban-column" id="todo">
+            <div class="kanban-column-header bg-light">
+                <h5><i class="bi bi-list-check"></i> A Fazer</h5>
+                <span class="badge bg-secondary">{{ todo_count }}</span>
+            </div>
+            <div class="kanban-items" data-status="todo">
+                {% for task in todo_tasks %}
+                <div class="kanban-item" data-task-id="{{ task.id }}">
+                    <div class="task-priority {{ task.priority_class }}">
+                        <i class="bi bi-flag-fill"></i>
+                    </div>
+                    <h6 class="task-title">{{ task.title }}</h6>
+                    <p class="task-description">{{ task.description }}</p>
+                    <div class="task-checklist">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-primary" role="progressbar" 
+                                 style="width: {{ task.checklist_progress }}%;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-footer">
+                        <span class="task-date">{{ task.date }}</span>
+                        <div class="task-actions">
+                            <button class="btn btn-sm btn-link" onclick="editTask({{ task.id }})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Coluna: Fazendo -->
+        <div class="kanban-column" id="doing">
+            <div class="kanban-column-header bg-light">
+                <h5><i class="bi bi-gear"></i> Fazendo</h5>
+                <span class="badge bg-secondary">{{ doing_count }}</span>
+            </div>
+            <div class="kanban-items" data-status="doing">
+                {% for task in doing_tasks %}
+                <div class="kanban-item" data-task-id="{{ task.id }}">
+                    <div class="task-priority {{ task.priority_class }}">
+                        <i class="bi bi-flag-fill"></i>
+                    </div>
+                    <h6 class="task-title">{{ task.title }}</h6>
+                    <p class="task-description">{{ task.description }}</p>
+                    <div class="task-checklist">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-primary" role="progressbar" 
+                                 style="width: {{ task.checklist_progress }}%;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-footer">
+                        <span class="task-date">{{ task.date }}</span>
+                        <div class="task-actions">
+                            <button class="btn btn-sm btn-link" onclick="editTask({{ task.id }})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Coluna: Concluído -->
+        <div class="kanban-column" id="done">
+            <div class="kanban-column-header bg-light">
+                <h5><i class="bi bi-check2-circle"></i> Concluído</h5>
+                <span class="badge bg-secondary">{{ done_count }}</span>
+            </div>
+            <div class="kanban-items" data-status="done">
+                {% for task in done_tasks %}
+                <div class="kanban-item" data-task-id="{{ task.id }}">
+                    <div class="task-priority {{ task.priority_class }}">
+                        <i class="bi bi-flag-fill"></i>
+                    </div>
+                    <h6 class="task-title">{{ task.title }}</h6>
+                    <p class="task-description">{{ task.description }}</p>
+                    <div class="task-checklist">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-primary" role="progressbar" 
+                                 style="width: {{ task.checklist_progress }}%;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-footer">
+                        <span class="task-date">{{ task.date }}</span>
+                        <div class="task-actions">
+                            <button class="btn btn-sm btn-link" onclick="editTask({{ task.id }})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhes da Tarefa -->
+    <div class="modal fade" id="taskModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalhes da Tarefa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="taskForm">
+                        <div class="mb-3">
+                            <label class="form-label">Título</label>
+                            <input type="text" class="form-control" id="taskTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descrição</label>
+                            <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Prioridade</label>
+                            <select class="form-select" id="taskPriority">
+                                <option value="low">Baixa</option>
+                                <option value="medium">Média</option>
+                                <option value="high">Alta</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Checklist</label>
+                            <div id="taskChecklist">
+                                <!-- Checklist items serão inseridos via JavaScript -->
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="addChecklistItem">
+                                <i class="bi bi-plus"></i> Adicionar Item
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="saveTask">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Filtros -->
+    <div class="modal fade" id="filterModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Filtrar Tarefas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="filterForm">
+                        <div class="mb-3">
+                            <label class="form-label">Prioridade</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="high" id="filterHigh">
+                                <label class="form-check-label" for="filterHigh">Alta</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="medium" id="filterMedium">
+                                <label class="form-check-label" for="filterMedium">Média</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="low" id="filterLow">
+                                <label class="form-check-label" for="filterLow">Baixa</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Data</label>
+                            <input type="date" class="form-control" id="filterDate">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="applyFilters">Aplicar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/kanban.css') }}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="{{ url_for('static', filename='js/kanban.js') }}"></script>
+{% endblock %}
