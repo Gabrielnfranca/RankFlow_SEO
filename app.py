@@ -6,13 +6,14 @@ import datetime
 import json
 from flask_sqlalchemy import SQLAlchemy
 from urllib.parse import urlparse
+import logging
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'sua_chave_secreta_aqui')
 
 # Configuração do banco de dados
 DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///rankflow.db')
-if DATABASE_URL.startswith("postgres://"):
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
@@ -23,6 +24,10 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+# Configuração de logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @app.teardown_appcontext
 def close_db(error):
@@ -74,27 +79,35 @@ class ProgressoSEO(db.Model):
     status = db.Column(db.String(20), default='todo')
     observacoes = db.Column(db.Text)
 
-def init_db():
-    with app.app_context():
-        # Criar todas as tabelas
-        db.create_all()
-        
-        # Verificar se já existe um usuário admin
-        admin = Usuario.query.filter_by(email='admin@rankflow.com').first()
-        if not admin:
-            # Criar usuário admin
-            senha_hash = generate_password_hash('admin123')
-            admin = Usuario(
-                email='admin@rankflow.com',
-                senha=senha_hash,
-                nome='Administrador'
-            )
-            db.session.add(admin)
-            db.session.commit()
-
 @login_manager.user_loader
 def load_user(user_id):
-    return Usuario.query.get(user_id)
+    try:
+        return Usuario.query.get(int(user_id))
+    except Exception as e:
+        logger.error(f"Erro ao carregar usuário: {str(e)}")
+        return None
+
+def init_db():
+    try:
+        with app.app_context():
+            # Criar todas as tabelas
+            db.create_all()
+            
+            # Verificar se já existe um usuário admin
+            admin = Usuario.query.filter_by(email='admin@rankflow.com').first()
+            if not admin:
+                # Criar usuário admin
+                senha_hash = generate_password_hash('admin123')
+                admin = Usuario(
+                    email='admin@rankflow.com',
+                    senha=senha_hash,
+                    nome='Administrador'
+                )
+                db.session.add(admin)
+                db.session.commit()
+                logger.info("Usuário admin criado com sucesso!")
+    except Exception as e:
+        logger.error(f"Erro ao inicializar banco de dados: {str(e)}")
 
 @app.route('/')
 def index():
@@ -102,22 +115,27 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        senha = request.form.get('senha')
-        
-        if not email or not senha:
-            flash('Por favor, preencha todos os campos.', 'error')
-            return render_template('login.html')
-        
-        usuario = Usuario.query.filter_by(email=email).first()
-        
-        if usuario and check_password_hash(usuario.senha, senha):
-            login_user(usuario)
-            return redirect(url_for('dashboard'))
-        
-        flash('Email ou senha incorretos.', 'error')
-    return render_template('login.html')
+    try:
+        if request.method == 'POST':
+            email = request.form.get('email')
+            senha = request.form.get('senha')
+            
+            if not email or not senha:
+                flash('Por favor, preencha todos os campos.', 'error')
+                return render_template('login.html')
+            
+            usuario = Usuario.query.filter_by(email=email).first()
+            
+            if usuario and check_password_hash(usuario.senha, senha):
+                login_user(usuario)
+                return redirect(url_for('dashboard'))
+            
+            flash('Email ou senha incorretos.', 'error')
+        return render_template('login.html')
+    except Exception as e:
+        logger.error(f"Erro no login: {str(e)}")
+        flash('Erro ao fazer login. Por favor, tente novamente.', 'error')
+        return render_template('login.html')
 
 @app.route('/dashboard')
 @login_required
@@ -129,7 +147,7 @@ def dashboard():
                             clientes=clientes,
                             total_clientes=len(clientes))
     except Exception as e:
-        print(f"Erro no dashboard: {str(e)}")
+        logger.error(f"Erro no dashboard: {str(e)}")
         flash('Erro ao carregar dashboard', 'error')
         return render_template('dashboard.html', clientes=[], total_clientes=0)
 
@@ -182,6 +200,7 @@ def novo_cliente():
             
         except Exception as e:
             db.session.rollback()
+            logger.error(f"Erro ao adicionar cliente: {str(e)}")
             flash('Erro ao adicionar cliente. Por favor, tente novamente.', 'error')
             return redirect(url_for('novo_cliente'))
     
@@ -246,6 +265,7 @@ def editar_cliente(cliente_id):
             
         except Exception as e:
             db.session.rollback()
+            logger.error(f"Erro ao atualizar cliente: {str(e)}")
             flash('Erro ao atualizar cliente. Por favor, tente novamente.', 'error')
     
     return render_template('editar_cliente.html', cliente=cliente)
@@ -271,6 +291,7 @@ def excluir_cliente(cliente_id):
         
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Erro ao excluir cliente: {str(e)}")
         flash('Erro ao excluir cliente. Por favor, tente novamente.', 'error')
     
     return redirect(url_for('dashboard'))
@@ -311,6 +332,7 @@ def criar_tarefa(cliente_id):
         
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Erro ao criar tarefa: {str(e)}")
         return jsonify({
             'success': False,
             'error': f'Erro ao criar tarefa: {str(e)}'
@@ -425,6 +447,7 @@ def atualizar_status_tarefa(cliente_id):
         
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Erro ao atualizar status da tarefa: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/cliente/<int:cliente_id>/seo-roadmap/atualizar', methods=['POST'])
@@ -459,6 +482,7 @@ def atualizar_progresso_seo(cliente_id):
         
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Erro ao atualizar progresso SEO: {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/cliente/<int:cliente_id>/seo-tecnico')
@@ -481,6 +505,7 @@ def seo_tecnico_kanban(cliente_id):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
+            logger.error(f"Erro ao criar tarefa padrão: {str(e)}")
             flash(f'Erro ao criar tarefa padrão: {str(e)}', 'error')
             return redirect(url_for('dashboard'))
 
@@ -544,7 +569,6 @@ def seo_tecnico_kanban(cliente_id):
                          progress=progress)
 
 if __name__ == '__main__':
-    # Inicializar o banco de dados
     with app.app_context():
-        db.create_all()
+        init_db()
     app.run(debug=True, port=5000)
