@@ -250,6 +250,57 @@ def login():
         flash('Ocorreu um erro inesperado. Por favor, tente novamente.', 'error')
         return render_template('login.html'), 500
 
+@app.route('/cadastro', methods=['GET', 'POST'])
+def cadastro():
+    try:
+        if current_user.is_authenticated:
+            return redirect(url_for('dashboard'))
+
+        if request.method == 'POST':
+            nome = request.form.get('nome')
+            email = request.form.get('email')
+            senha = request.form.get('senha')
+            confirmar_senha = request.form.get('confirmar_senha')
+
+            # Validação dos campos
+            if not all([nome, email, senha, confirmar_senha]):
+                flash('Por favor, preencha todos os campos.', 'error')
+                return render_template('cadastro.html')
+
+            if senha != confirmar_senha:
+                flash('As senhas não coincidem.', 'error')
+                return render_template('cadastro.html')
+
+            # Verifica se o email já está em uso
+            usuario_existente = Usuario.query.filter_by(email=email).first()
+            if usuario_existente:
+                flash('Este email já está cadastrado.', 'error')
+                return render_template('cadastro.html')
+
+            # Cria o novo usuário
+            novo_usuario = Usuario(
+                nome=nome,
+                email=email,
+                senha=generate_password_hash(senha)
+            )
+
+            try:
+                db.session.add(novo_usuario)
+                db.session.commit()
+                flash('Cadastro realizado com sucesso! Por favor, faça login.', 'success')
+                return redirect(url_for('login'))
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Erro ao criar usuário: {str(e)}")
+                flash('Erro ao criar usuário. Por favor, tente novamente.', 'error')
+                return render_template('cadastro.html')
+
+        return render_template('cadastro.html')
+    except Exception as e:
+        logger.error(f"Erro inesperado na rota de cadastro: {str(e)}", exc_info=True)
+        flash('Ocorreu um erro inesperado. Por favor, tente novamente.', 'error')
+        return render_template('cadastro.html'), 500
+
 @app.route('/logout')
 @login_required
 def logout():
