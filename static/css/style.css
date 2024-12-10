@@ -1,10 +1,10 @@
 /* Variáveis Globais */
 :root {
-    --primary-color: #0061f2;
-    --secondary-color: #6ea8fe;
+    --primary-color: #2c5282;
+    --secondary-color: #4a5568;
     --accent-color: #bbed21;
-    --dark-blue: #1a1f36;
-    --text-color: #1a1f36;
+    --dark-blue: #1a202c;
+    --text-color: #2d3748;
     --sidebar-bg: #ffffff;
     --header-height: 60px;
     --sidebar-width: 240px;
@@ -16,7 +16,7 @@ body {
     font-family: 'Open Sans', 'Helvetica Neue', sans-serif;
     margin: 0;
     padding: 0;
-    background: linear-gradient(135deg, #0061f2 0%, #6ea8fe 100%);
+    background: linear-gradient(135deg, #2c5282 0%, #4a5568 100%);
     color: #ffffff;
     display: flex;
     min-height: 100vh;
@@ -30,7 +30,7 @@ body {
     position: fixed;
     left: 0;
     top: 0;
-    background: #1a1f36;
+    background: var(--dark-blue);
     color: #ffffff;
     display: flex;
     flex-direction: column;
@@ -92,14 +92,14 @@ body {
 .main-content {
     margin-left: var(--sidebar-width);
     flex: 1;
-    background: #1a1f36;
+    background: var(--dark-blue);
     min-height: 100vh;
 }
 
 /* Header */
 .top-header {
     height: var(--header-height);
-    background: #1a1f36;
+    background: var(--dark-blue);
     box-shadow: var(--box-shadow);
     padding: 0 30px;
     display: flex;
@@ -112,7 +112,7 @@ body {
 
 /* Dashboard Cards */
 .dashboard-card {
-    background: #1a1f36;
+    background: var(--dark-blue);
     border-radius: 8px;
     box-shadow: var(--box-shadow);
     margin-bottom: 20px;
@@ -648,7 +648,7 @@ body {
 /* Estilos modernos para a página de login */
 .login-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #0061f2 0%, #6ea8fe 100%);
+    background: linear-gradient(135deg, #2c5282 0%, #4a5568 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -794,7 +794,7 @@ body {
     width: 60%;
     margin: 1.5rem auto 0;
     transition: all 0.3s ease;
-    color: #0061f2;
+    color: #2c5282;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     display: block;
