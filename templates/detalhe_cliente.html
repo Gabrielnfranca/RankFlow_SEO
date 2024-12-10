@@ -1,200 +1,278 @@
-{% extends "base_cliente.html" %}
+{% extends "base.html" %}
 
-{% block title %}{{ cliente.nome }} - Detalhes{% endblock %}
+{% block title %}{{ client.nome }} - Detalhes do Cliente{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-3">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">{{ cliente.nome }}</li>
-        </ol>
-    </nav>
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Painel</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('clientes') }}">Clientes</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ client.nome }}</li>
+    </ol>
+</nav>
 
-    <!-- Cabeçalho do Cliente -->
-    <div class="dashboard-card mb-4">
-        <div class="card-body">
-            <div class="d-flex align-items-center flex-wrap gap-4">
-                <div class="avatar-circle bg-gradient" style="width: 72px; height: 72px; font-size: 28px;">
-                    {{ cliente.nome[:2].upper() }}
-                </div>
-                <div class="flex-grow-1">
-                    <div class="d-flex align-items-center flex-wrap gap-3">
-                        <h1 class="h3 mb-0">{{ cliente.nome }}</h1>
-                        {% if cliente.website %}
-                            <a href="{{ cliente.website }}" target="_blank" class="text-decoration-none d-flex align-items-center">
-                                <i class="bi bi-link-45deg me-1"></i>{{ cliente.website }}
-                            </a>
-                        {% endif %}
+<!-- Cabeçalho do Cliente -->
+<div class="client-header mb-4">
+    <div class="row align-items-center">
+        <div class="col-auto">
+            <div class="avatar-lg">
+                <span class="avatar-title rounded-circle bg-primary">
+                    {{ client.nome[0] | upper }}
+                </span>
+            </div>
+        </div>
+        <div class="col">
+            <h2 class="mb-1">{{ client.nome }}</h2>
+            <p class="mb-0 text-muted">
+                <i class="bi bi-globe me-2"></i>{{ client.website }}
+                <span class="mx-2">•</span>
+                <i class="bi bi-calendar-event me-2"></i>Cliente desde {{ client.data_cadastro.strftime('%d/%m/%Y') }}
+            </p>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('editar_cliente', id=client.id) }}" class="btn btn-primary">
+                <i class="bi bi-pencil me-2"></i>Editar Cliente
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Cartões de Progresso -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card progress-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="stat-icon bg-primary me-3">
+                        <i class="bi bi-graph-up text-white"></i>
                     </div>
-                    <p class="text-muted mb-0 mt-2">{{ cliente.descricao or 'Sem descrição' }}</p>
+                    <div>
+                        <h6 class="card-subtitle">Palavras-chave</h6>
+                        <h3 class="card-title mb-0">{{ keywords_count }}</h3>
+                    </div>
                 </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="btn btn-outline-primary">
-                        <i class="bi bi-pencil me-1"></i>Editar
-                    </a>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="dropdown">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text me-2"></i>Exportar Relatório</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-archive me-2"></i>Arquivar</a></li>
-                    </ul>
+                <div class="progress">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ (keywords_count/100)*100 }}%" aria-valuenow="{{ keywords_count }}" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Cards de Estatísticas -->
-    <div class="row g-4 mb-4">
-        <div class="col-sm-6 col-xl-3">
-            <div class="dashboard-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="stat-icon bg-primary-subtle">
-                                <i class="bi bi-key"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="card-subtitle mb-2">Palavras-chave</h6>
-                            <h2 class="card-title mb-0">0</h2>
-                            <div class="small text-success">
-                                <i class="bi bi-arrow-up"></i> 0% este mês
-                            </div>
-                        </div>
+    <div class="col-md-3">
+        <div class="card progress-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="stat-icon bg-success me-3">
+                        <i class="bi bi-arrow-up-circle text-white"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-subtitle">Rankings Melhorados</h6>
+                        <h3 class="card-title mb-0">{{ improved_rankings }}</h3>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="dashboard-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="stat-icon bg-success-subtle">
-                                <i class="bi bi-graph-up-arrow"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="card-subtitle mb-2">Rankings Melhorados</h6>
-                            <h2 class="card-title mb-0">0</h2>
-                            <div class="small text-success">
-                                <i class="bi bi-arrow-up"></i> 0% este mês
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="dashboard-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="stat-icon bg-warning-subtle">
-                                <i class="bi bi-bell"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="card-subtitle mb-2">Alertas</h6>
-                            <h2 class="card-title mb-0">0</h2>
-                            <div class="small text-warning">
-                                <i class="bi bi-exclamation-triangle"></i> 2 pendentes
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="dashboard-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="stat-icon bg-info-subtle">
-                                <i class="bi bi-clock-history"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="card-subtitle mb-2">Última Atualização</h6>
-                            <h2 class="card-title mb-0">{{ cliente.updated_at.strftime('%d/%m') }}</h2>
-                            <div class="small text-muted">
-                                {{ cliente.updated_at.strftime('%H:%M') }}
-                            </div>
-                        </div>
-                    </div>
+                <div class="progress">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ (improved_rankings/total_rankings)*100 }}%" aria-valuenow="{{ improved_rankings }}" aria-valuemin="0" aria-valuemax="{{ total_rankings }}"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="row g-4">
-        <!-- Informações Detalhadas -->
-        <div class="col-lg-4">
-            <div class="dashboard-card h-100">
-                <div class="card-header border-bottom">
-                    <div class="d-flex align-items-center">
-                        <h5 class="mb-0">
-                            <i class="bi bi-info-circle me-2"></i>Informações
-                        </h5>
-                        <button class="btn btn-sm btn-link ms-auto">
-                            <i class="bi bi-pencil"></i>
-                        </button>
+    <div class="col-md-3">
+        <div class="card progress-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="stat-icon bg-warning me-3">
+                        <i class="bi bi-list-task text-white"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-subtitle">Tarefas Concluídas</h6>
+                        <h3 class="card-title mb-0">{{ completed_tasks }}/{{ total_tasks }}</h3>
                     </div>
                 </div>
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4 text-muted">ID</dt>
-                        <dd class="col-sm-8">{{ cliente.id }}</dd>
-
-                        <dt class="col-sm-4 text-muted">Criado em</dt>
-                        <dd class="col-sm-8">{{ cliente.created_at.strftime('%d/%m/%Y %H:%M') }}</dd>
-
-                        <dt class="col-sm-4 text-muted">Status</dt>
-                        <dd class="col-sm-8"><span class="badge bg-success">Ativo</span></dd>
-
-                        <dt class="col-sm-4 text-muted">Progresso</dt>
-                        <dd class="col-sm-8">
-                            <div class="progress" style="height: 6px;">
-                                <div class="progress-bar" role="progressbar" style="width: 25%"></div>
-                            </div>
-                        </dd>
-                    </dl>
+                <div class="progress">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ (completed_tasks/total_tasks)*100 }}%" aria-valuenow="{{ completed_tasks }}" aria-valuemin="0" aria-valuemax="{{ total_tasks }}"></div>
                 </div>
             </div>
         </div>
-
-        <!-- Atividades Recentes -->
-        <div class="col-lg-8">
-            <div class="dashboard-card h-100">
-                <div class="card-header border-bottom">
-                    <div class="d-flex align-items-center">
-                        <h5 class="mb-0">
-                            <i class="bi bi-clock-history me-2"></i>Atividades Recentes
-                        </h5>
-                        <div class="ms-auto">
-                            <select class="form-select form-select-sm">
-                                <option>Últimos 7 dias</option>
-                                <option>Últimos 30 dias</option>
-                                <option>Todo histórico</option>
-                            </select>
-                        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card progress-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="stat-icon bg-info me-3">
+                        <i class="bi bi-clock-history text-white"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-subtitle">Relatórios Gerados</h6>
+                        <h3 class="card-title mb-0">{{ reports_count }}</h3>
                     </div>
                 </div>
-                <div class="card-body p-0">
-                    <div class="timeline p-4">
-                        <!-- Se não houver atividades -->
-                        <div class="text-center py-4">
-                            <i class="bi bi-calendar3 display-1 text-muted mb-4"></i>
-                            <h5>Nenhuma atividade registrada</h5>
-                            <p class="text-muted">As atividades do cliente aparecerão aqui.</p>
-                        </div>
-                    </div>
+                <div class="progress">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ (reports_count/10)*100 }}%" aria-valuenow="{{ reports_count }}" aria-valuemin="0" aria-valuemax="10"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Conteúdo Principal -->
+<div class="row">
+    <!-- Coluna Esquerda -->
+    <div class="col-md-8">
+        <!-- Seção de Palavras-chave -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-key me-2"></i>Palavras-chave Monitoradas
+                </h5>
+                <button class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg me-2"></i>Adicionar Palavra-chave
+                </button>
+            </div>
+            <div class="card-body">
+                {% if keywords %}
+                <div class="keyword-list">
+                    {% for keyword in keywords %}
+                    <div class="keyword-item">
+                        <div class="position {{ keyword.status }}">
+                            {% if keyword.status == 'up' %}
+                            <i class="bi bi-arrow-up"></i>
+                            {% elif keyword.status == 'down' %}
+                            <i class="bi bi-arrow-down"></i>
+                            {% else %}
+                            <i class="bi bi-dash"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">{{ keyword.termo }}</h6>
+                            <small class="text-muted">Posição: {{ keyword.posicao }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-{{ keyword.status }}">
+                                {% if keyword.status == 'up' %}+{% endif %}{{ keyword.variacao }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-search"></i>
+                    <h5>Nenhuma palavra-chave monitorada</h5>
+                    <p>Adicione palavras-chave para começar a monitorar o ranking do seu cliente.</p>
+                    <button class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-2"></i>Adicionar Palavra-chave
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Gráfico de Rankings -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>Evolução dos Rankings
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="rankingsChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna Direita -->
+    <div class="col-md-4">
+        <!-- Atividades Recentes -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-activity me-2"></i>Atividades Recentes
+                </h5>
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        Filtrar
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <li><a class="dropdown-item" href="#">Todas as atividades</a></li>
+                        <li><a class="dropdown-item" href="#">Rankings</a></li>
+                        <li><a class="dropdown-item" href="#">Palavras-chave</a></li>
+                        <li><a class="dropdown-item" href="#">Relatórios</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if activities %}
+                <div class="timeline">
+                    {% for activity in activities %}
+                    <div class="timeline-item">
+                        <h6 class="mb-1">{{ activity.title }}</h6>
+                        <p class="text-muted mb-0">{{ activity.description }}</p>
+                        <small class="text-muted">{{ activity.date.strftime('%d/%m/%Y %H:%M') }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-clock-history"></i>
+                    <h5>Nenhuma atividade recente</h5>
+                    <p>As atividades relacionadas ao cliente aparecerão aqui.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Ações Rápidas -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning me-2"></i>Ações Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary">
+                        <i class="bi bi-file-earmark-text me-2"></i>Gerar Relatório
+                    </button>
+                    <button class="btn btn-outline-primary">
+                        <i class="bi bi-plus-lg me-2"></i>Nova Palavra-chave
+                    </button>
+                    <button class="btn btn-outline-primary">
+                        <i class="bi bi-gear me-2"></i>Configurações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de Rankings
+    var ctx = document.getElementById('rankingsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+            datasets: [{
+                label: 'Média dos Rankings',
+                data: [12, 19, 3, 5, 2, 3],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    reverse: true
+                }
+            }
+        }
+    });
+});
+</script>
 {% endblock %}
