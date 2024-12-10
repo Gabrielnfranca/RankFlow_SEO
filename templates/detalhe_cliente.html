@@ -27,7 +27,7 @@
             <p class="mb-0 text-muted">
                 <i class="bi bi-globe me-2"></i>{{ cliente.website }}
                 <span class="mx-2">•</span>
-                <i class="bi bi-calendar-event me-2"></i>Cliente desde {{ cliente.data_cadastro.strftime('%d/%m/%Y') }}
+                <i class="bi bi-calendar-event me-2"></i>Cliente desde {{ cliente.created_at.strftime('%d/%m/%Y') }}
             </p>
         </div>
         <div class="col-auto">
