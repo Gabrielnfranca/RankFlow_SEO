@@ -47,9 +47,8 @@ class Cliente(db.Model):
     email = db.Column(db.String(120))
     telefone = db.Column(db.String(20))
     website = db.Column(db.String(200))
-    observacoes = db.Column(db.Text)
+    descricao = db.Column(db.Text)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
-    tarefas = db.relationship('Tarefa', backref='cliente', lazy=True)
 
 class Tarefa(db.Model):
     __tablename__ = 'tarefa'
@@ -219,28 +218,37 @@ def cadastro():
 def novo_cliente():
     if request.method == 'POST':
         try:
-            nome = request.form['nome']
-            website = request.form['website']
-            descricao = request.form['descricao']
+            # Obtém os dados do formulário
+            nome = request.form.get('nome')
+            website = request.form.get('website')
+            descricao = request.form.get('descricao')
             
+            # Validação básica
+            if not nome:
+                flash('O nome do cliente é obrigatório.', 'error')
+                return render_template('novo_cliente.html')
+            
+            # Cria o novo cliente
             novo_cliente = Cliente(
                 nome=nome,
                 website=website,
                 descricao=descricao,
-                usuario_id=current_user.id  # Adiciona o ID do usuário atual
+                usuario_id=current_user.id
             )
             
+            # Adiciona e salva no banco de dados
             db.session.add(novo_cliente)
             db.session.commit()
             
             flash('Cliente adicionado com sucesso!', 'success')
             return redirect(url_for('dashboard'))
+            
         except Exception as e:
             db.session.rollback()
-            flash('Erro ao adicionar cliente. Por favor, tente novamente.', 'error')
             logger.error(f"Erro ao adicionar cliente: {str(e)}")
+            flash('Erro ao adicionar cliente. Por favor, tente novamente.', 'error')
             return render_template('novo_cliente.html')
-            
+    
     return render_template('novo_cliente.html')
 
 @app.route('/cliente/<int:cliente_id>')
