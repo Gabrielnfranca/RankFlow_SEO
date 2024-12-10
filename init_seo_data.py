@@ -1,137 +1,127 @@
-from app import app, db, SeoTecnicoCategoria, SeoTecnicoItem
+from app import app, db
+from models import SeoTecnicoCategoria, SeoTecnicoItem
 
-def init_seo_tecnico_data():
+def init_seo_data():
     with app.app_context():
-        # Verificar se já existem categorias
-        categorias = SeoTecnicoCategoria.query.all()
-        if not categorias:
-            print("Inserindo categorias...")
-            # Inserir categorias
-            categorias_data = [
-                {
-                    'nome': 'Análise Técnica Inicial',
-                    'descricao': 'Verificações técnicas básicas e essenciais',
-                    'ordem': 1
-                },
-                {
-                    'nome': 'Performance do Site',
-                    'descricao': 'Análise e otimização de desempenho',
-                    'ordem': 2
-                },
-                {
-                    'nome': 'Estrutura do Site',
-                    'descricao': 'Organização e arquitetura da informação',
-                    'ordem': 3
-                },
-                {
-                    'nome': 'Indexação e Rastreabilidade',
-                    'descricao': 'Verificação de indexação e crawling',
-                    'ordem': 4
-                },
-                {
-                    'nome': 'Otimização On-page Base',
-                    'descricao': 'Elementos básicos de otimização on-page',
-                    'ordem': 5
-                },
-                {
-                    'nome': 'Experiência do Usuário',
-                    'descricao': 'Métricas e análise de experiência',
-                    'ordem': 6
-                },
-                {
-                    'nome': 'Segurança e Conformidade',
-                    'descricao': 'Verificações de segurança e compliance',
-                    'ordem': 7
-                }
-            ]
-
-            for cat_data in categorias_data:
-                categoria = SeoTecnicoCategoria(**cat_data)
-                db.session.add(categoria)
-            db.session.commit()
-
-            # Recarregar categorias após inserção
-            categorias = SeoTecnicoCategoria.query.all()
-
-        # Verificar se já existem itens
-        itens = SeoTecnicoItem.query.all()
-        if not itens:
-            print("Inserindo itens...")
-            # Mapear categorias por nome para facilitar a inserção dos itens
-            categorias_dict = {cat.nome: cat for cat in categorias}
-
-            # Itens para cada categoria
-            itens_data = {
-                'Análise Técnica Inicial': [
+        # Criar categorias
+        categorias = [
+            {
+                'nome': 'Otimização On-page',
+                'descricao': 'Elementos básicos de otimização na página',
+                'itens': [
                     {
-                        'nome': 'Verificação de robots.txt',
-                        'descricao': 'Verificar configuração e regras do robots.txt',
-                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/robots/intro',
-                        'ordem': 1
+                        'nome': 'Meta Title',
+                        'descricao': 'Verificar se todas as páginas têm títulos únicos e otimizados',
+                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/appearance/title-link'
                     },
                     {
-                        'nome': 'Análise do sitemap.xml',
-                        'descricao': 'Verificar estrutura e URLs no sitemap',
-                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/sitemaps/overview',
-                        'ordem': 2
+                        'nome': 'Meta Description',
+                        'descricao': 'Verificar se todas as páginas têm descrições únicas e atraentes',
+                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/appearance/snippet'
                     },
                     {
-                        'nome': 'Verificação de SSL/HTTPS',
-                        'descricao': 'Confirmar certificado SSL e redirecionamentos HTTPS',
-                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/security/https',
-                        'ordem': 3
+                        'nome': 'Heading Tags',
+                        'descricao': 'Verificar estrutura de H1-H6 e uso de palavras-chave',
+                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/guidelines/heading-tags'
                     }
-                ],
-                'Performance do Site': [
+                ]
+            },
+            {
+                'nome': 'Performance',
+                'descricao': 'Métricas de desempenho e velocidade',
+                'itens': [
                     {
                         'nome': 'Core Web Vitals',
-                        'descricao': 'Análise das principais métricas de performance',
-                        'documentacao_url': 'https://web.dev/vitals/',
-                        'ordem': 1
+                        'descricao': 'Verificar LCP, FID e CLS',
+                        'documentacao_url': 'https://web.dev/vitals/'
                     },
                     {
-                        'nome': 'Otimização de imagens',
-                        'descricao': 'Verificar compressão e formatos de imagem',
-                        'documentacao_url': 'https://web.dev/optimize-images/',
-                        'ordem': 2
+                        'nome': 'Mobile Speed',
+                        'descricao': 'Testar velocidade em dispositivos móveis',
+                        'documentacao_url': 'https://developers.google.com/speed/docs/insights/mobile'
                     },
                     {
-                        'nome': 'Minificação de CSS/JS',
-                        'descricao': 'Verificar minificação de recursos',
-                        'documentacao_url': 'https://web.dev/minify-css/',
-                        'ordem': 3
+                        'nome': 'Otimização de Imagens',
+                        'descricao': 'Verificar compressão e formatos modernos',
+                        'documentacao_url': 'https://web.dev/fast/#optimize-your-images'
                     }
-                ],
-                'Estrutura do Site': [
+                ]
+            },
+            {
+                'nome': 'Conteúdo',
+                'descricao': 'Análise e otimização de conteúdo',
+                'itens': [
                     {
-                        'nome': 'Arquitetura da Informação',
-                        'descricao': 'Análise da estrutura de navegação e hierarquia',
-                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/guidelines/site-structure',
-                        'ordem': 1
+                        'nome': 'Palavras-chave',
+                        'descricao': 'Verificar densidade e posicionamento',
+                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/guidelines/irrelevant-keywords'
                     },
                     {
-                        'nome': 'URLs Amigáveis',
-                        'descricao': 'Verificar estrutura e formatação das URLs',
-                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/guidelines/url-structure',
-                        'ordem': 2
+                        'nome': 'Links Internos',
+                        'descricao': 'Analisar estrutura de links internos',
+                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/guidelines/links-crawlable'
+                    },
+                    {
+                        'nome': 'Conteúdo Duplicado',
+                        'descricao': 'Identificar e corrigir conteúdo duplicado',
+                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/guidelines/duplicate-content'
+                    }
+                ]
+            },
+            {
+                'nome': 'Técnico',
+                'descricao': 'Aspectos técnicos e infraestrutura',
+                'itens': [
+                    {
+                        'nome': 'SSL/HTTPS',
+                        'descricao': 'Verificar certificado e redirecionamentos',
+                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/security/https'
+                    },
+                    {
+                        'nome': 'Sitemap XML',
+                        'descricao': 'Validar estrutura e submissão',
+                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/sitemaps/overview'
+                    },
+                    {
+                        'nome': 'Robots.txt',
+                        'descricao': 'Verificar configurações de crawling',
+                        'documentacao_url': 'https://developers.google.com/search/docs/advanced/robots/intro'
                     }
                 ]
             }
+        ]
 
-            for categoria_nome, items in itens_data.items():
-                categoria = categorias_dict.get(categoria_nome)
-                if categoria:
-                    for item_data in items:
-                        item = SeoTecnicoItem(
-                            categoria_id=categoria.id,
-                            **item_data
-                        )
-                        db.session.add(item)
-            
-            db.session.commit()
-            print("Dados iniciais do SEO Técnico inseridos com sucesso!")
-        else:
-            print("Dados já existem no banco de dados.")
+        # Inserir categorias e itens
+        for i, cat_data in enumerate(categorias, 1):
+            categoria = SeoTecnicoCategoria.query.filter_by(nome=cat_data['nome']).first()
+            if not categoria:
+                categoria = SeoTecnicoCategoria(
+                    nome=cat_data['nome'],
+                    descricao=cat_data['descricao'],
+                    ordem=i
+                )
+                db.session.add(categoria)
+                db.session.flush()  # Para obter o ID da categoria
+
+            # Inserir itens da categoria
+            for j, item_data in enumerate(cat_data['itens'], 1):
+                item = SeoTecnicoItem.query.filter_by(
+                    categoria_id=categoria.id,
+                    nome=item_data['nome']
+                ).first()
+                
+                if not item:
+                    item = SeoTecnicoItem(
+                        categoria_id=categoria.id,
+                        nome=item_data['nome'],
+                        descricao=item_data['descricao'],
+                        documentacao_url=item_data['documentacao_url'],
+                        ordem=j
+                    )
+                    db.session.add(item)
+
+        db.session.commit()
+        print("Dados SEO inseridos com sucesso!")
 
 if __name__ == '__main__':
-    init_seo_tecnico_data()
+    init_seo_data()
