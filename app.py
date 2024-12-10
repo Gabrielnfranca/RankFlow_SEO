@@ -185,8 +185,15 @@ def dashboard():
 @login_required
 def detalhe_cliente(id):
     try:
-        cliente = Cliente.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
+        # Verificar se o cliente existe e pertence ao usuário atual
+        cliente = Cliente.query.filter_by(id=id, usuario_id=current_user.id).first()
+        if not cliente:
+            flash('Cliente não encontrado.', 'danger')
+            return redirect(url_for('dashboard'))
+            
+        logger.info(f"Acessando detalhes do cliente {id}")
         return render_template('detalhe_cliente.html', cliente=cliente)
+        
     except Exception as e:
         logger.error(f"Erro ao carregar detalhes do cliente {id}: {str(e)}")
         flash('Erro ao carregar detalhes do cliente.', 'danger')
