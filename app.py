@@ -178,8 +178,6 @@ def dashboard():
         return render_template('dashboard.html', clientes=clientes)
     except Exception as e:
         logger.error(f"Erro ao acessar dashboard: {str(e)}", exc_info=True)
-        if hasattr(e, '__cause__'):
-            logger.error(f"Causa do erro: {e.__cause__}")
         flash('Ocorreu um erro ao carregar o dashboard. Por favor, tente novamente.', 'error')
         return render_template('dashboard.html', clientes=[]), 500
 
@@ -290,45 +288,50 @@ def health_check():
 @app.route('/cliente/<int:cliente_id>/seo-tecnico')
 @login_required
 def seo_tecnico(cliente_id):
-    cliente = Cliente.query.get_or_404(cliente_id)
-    
-    # Buscar todas as categorias ordenadas
-    categorias = db.session.query(SeoTecnicoCategoria).order_by(SeoTecnicoCategoria.ordem).all()
-    
-    # Contadores para status e prioridades
-    completed_count = 0
-    in_progress_count = 0
-    pending_count = 0
-    high_priority_count = 0
-    medium_priority_count = 0
-    low_priority_count = 0
-    total_items = 0
-    
-    # Buscar todos os itens e seus status para o cliente
-    itens_status = {}
-    for categoria in categorias:
-        itens = db.session.query(SeoTecnicoItem).filter_by(categoria_id=categoria.id).order_by(SeoTecnicoItem.ordem).all()
-        itens_status[categoria.id] = []
+    try:
+        # Verificar se o cliente pertence ao usuário atual
+        cliente = Cliente.query.filter_by(id=cliente_id, usuario_id=current_user.id).first_or_404()
         
-        for item in itens:
-            total_items += 1
-            status = db.session.query(SeoTecnicoStatus).filter_by(
-                cliente_id=cliente_id,
-                item_id=item.id
-            ).first()
+        app.logger.info(f"Acessando SEO Técnico para cliente {cliente_id}")
+        
+        # Buscar todas as categorias ordenadas
+        categorias = db.session.query(SeoTecnicoCategoria).order_by(SeoTecnicoCategoria.ordem).all()
+        
+        # Inicializar dicionário para armazenar itens por categoria
+        itens_status = {}
+        
+        # Contadores para status e prioridades
+        completed_count = 0
+        in_progress_count = 0
+        pending_count = 0
+        high_priority_count = 0
+        medium_priority_count = 0
+        low_priority_count = 0
+        total_items = 0
+        
+        # Para cada categoria, buscar seus itens e status
+        for categoria in categorias:
+            # Buscar itens da categoria
+            itens = db.session.query(SeoTecnicoItem).filter_by(categoria_id=categoria.id).order_by(SeoTecnicoItem.ordem).all()
+            itens_status[categoria.id] = []
             
-            if not status:
-                # Criar status padrão se não existir
-                status = SeoTecnicoStatus(
+            for item in itens:
+                # Buscar ou criar status para este item
+                status = SeoTecnicoStatus.query.filter_by(
                     cliente_id=cliente_id,
-                    item_id=item.id,
-                    status='pendente',
-                    prioridade='media'
-                )
-                db.session.add(status)
-                pending_count += 1
-                medium_priority_count += 1
-            else:
+                    item_id=item.id
+                ).first()
+                
+                if not status:
+                    status = SeoTecnicoStatus(
+                        cliente_id=cliente_id,
+                        item_id=item.id,
+                        status='pendente',
+                        prioridade='media'
+                    )
+                    db.session.add(status)
+                    db.session.commit()
+                
                 # Atualizar contadores
                 if status.status == 'concluido':
                     completed_count += 1
@@ -343,51 +346,84 @@ def seo_tecnico(cliente_id):
                     medium_priority_count += 1
                 else:
                     low_priority_count += 1
+                
+                total_items += 1
+                
+                # Adicionar item e seu status à lista da categoria
+                itens_status[categoria.id].append({
+                    'item': item,
+                    'status': status
+                })
         
-            itens_status[categoria.id].append({
-                'item': item,
-                'status': status
-            })
-    
-    db.session.commit()
-    
-    # Calcular progresso
-    progress = int((completed_count / total_items * 100) if total_items > 0 else 0)
-    
-    return render_template(
-        'seo_tecnico.html',
-        cliente=cliente,
-        categorias=categorias,
-        itens_status=itens_status,
-        progress=progress,
-        completed_count=completed_count,
-        in_progress_count=in_progress_count,
-        pending_count=pending_count,
-        high_priority_count=high_priority_count,
-        medium_priority_count=medium_priority_count,
-        low_priority_count=low_priority_count
-    )
+        # Calcular progresso
+        progress = int((completed_count / total_items * 100) if total_items > 0 else 0)
+        
+        app.logger.info(f"SEO Técnico carregado com sucesso. Progresso: {progress}%")
+        
+        return render_template('seo_tecnico.html',
+            cliente=cliente,
+            categorias=categorias,
+            itens_status=itens_status,
+            progress=progress,
+            completed_count=completed_count,
+            in_progress_count=in_progress_count,
+            pending_count=pending_count,
+            high_priority_count=high_priority_count,
+            medium_priority_count=medium_priority_count,
+            low_priority_count=low_priority_count
+        )
+        
+    except Exception as e:
+        app.logger.error(f"Erro ao carregar SEO Técnico para cliente {cliente_id}: {str(e)}")
+        flash('Erro ao carregar o módulo SEO Técnico.', 'danger')
+        return redirect(url_for('detalhe_cliente', id=cliente_id))
 
 @app.route('/api/seo-tecnico/atualizar-status', methods=['POST'])
 @login_required
 def atualizar_status_seo_tecnico():
-    data = request.json
-    status = SeoTecnicoStatus.query.filter_by(
-        cliente_id=data['cliente_id'],
-        item_id=data['item_id']
-    ).first()
-    
-    if status:
-        status.status = data['status']
-        status.prioridade = data.get('prioridade', status.prioridade)
-        status.observacoes = data.get('observacoes', status.observacoes)
-        status.data_verificacao = datetime.now() if data['status'] == 'concluido' else status.data_verificacao
-        status.data_atualizacao = datetime.now()
+    try:
+        data = request.get_json()
+        cliente_id = data.get('cliente_id')
+        item_id = data.get('item_id')
+        novo_status = data.get('status')
+        nova_prioridade = data.get('priority')
+
+        # Verificar se o cliente pertence ao usuário atual
+        cliente = Cliente.query.filter_by(id=cliente_id, usuario_id=current_user.id).first_or_404()
+        
+        app.logger.info(f"Atualizando status do item {item_id} para cliente {cliente_id}")
+        
+        # Buscar ou criar status
+        status = SeoTecnicoStatus.query.filter_by(
+            cliente_id=cliente_id,
+            item_id=item_id
+        ).first()
+        
+        if not status:
+            status = SeoTecnicoStatus(
+                cliente_id=cliente_id,
+                item_id=item_id,
+                status='pendente',
+                prioridade='media'
+            )
+            db.session.add(status)
+        
+        # Atualizar status e/ou prioridade
+        if novo_status:
+            status.status = novo_status
+        if nova_prioridade:
+            status.prioridade = nova_prioridade
+        
+        status.data_atualizacao = db.func.current_timestamp()
         db.session.commit()
         
+        app.logger.info(f"Status atualizado com sucesso: {novo_status}, prioridade: {nova_prioridade}")
+        
         return jsonify({'success': True})
-    
-    return jsonify({'success': False, 'error': 'Status não encontrado'}), 404
+        
+    except Exception as e:
+        app.logger.error(f"Erro ao atualizar status: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 400
 
 @login_manager.user_loader
 def load_user(user_id):
