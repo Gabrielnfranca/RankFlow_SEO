@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Clientes</h1>
+        <a href="{{ url_for('novo_cliente') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>Novo Cliente
+        </a>
+    </div>
+
+    {% if clientes %}
+    <div class="row">
+        {% for cliente in clientes %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar-lg me-3">
+                            <span class="avatar-title rounded-circle bg-primary">
+                                {{ cliente.nome[0] | upper }}
+                            </span>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">{{ cliente.nome }}</h5>
+                            {% if cliente.website %}
+                            <a href="{{ cliente.website }}" target="_blank" class="text-muted">
+                                <i class="bi bi-link-45deg"></i>{{ cliente.website }}
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if cliente.descricao %}
+                    <p class="card-text text-muted mb-3">{{ cliente.descricao }}</p>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar me-1"></i>
+                            Desde {{ cliente.created_at.strftime('%d/%m/%Y') }}
+                        </small>
+                        <div class="btn-group">
+                            <a href="{{ url_for('detalhe_cliente', id=cliente.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye me-1"></i>Detalhes
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('editar_cliente', id=cliente.id) }}">
+                                        <i class="bi bi-pencil me-2"></i>Editar
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('seo_roadmap', cliente_id=cliente.id) }}">
+                                        <i class="bi bi-kanban me-2"></i>SEO Roadmap
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('seo_tecnico', cliente_id=cliente.id) }}">
+                                        <i class="bi bi-gear me-2"></i>SEO Técnico
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="#" onclick="confirmarExclusao({{ cliente.id }})">
+                                        <i class="bi bi-trash me-2"></i>Excluir
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-people display-1 text-muted mb-4"></i>
+        <h4>Nenhum cliente cadastrado</h4>
+        <p class="text-muted">Comece adicionando seu primeiro cliente!</p>
+        <a href="{{ url_for('novo_cliente') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>Adicionar Cliente
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="modalExclusao" tabindex="-1" aria-labelledby="modalExclusaoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalExclusaoLabel">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="#" id="btnConfirmarExclusao" class="btn btn-danger">Excluir</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmarExclusao(clienteId) {
+    const modal = document.getElementById('modalExclusao');
+    const btnConfirmar = document.getElementById('btnConfirmarExclusao');
+    btnConfirmar.href = "{{ url_for('excluir_cliente', id=0) }}".replace('0', clienteId);
+    new bootstrap.Modal(modal).show();
+}
+</script>
+{% endblock %}

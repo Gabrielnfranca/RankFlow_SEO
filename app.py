@@ -181,6 +181,18 @@ def dashboard():
         flash('Ocorreu um erro ao carregar o dashboard. Por favor, tente novamente.', 'error')
         return render_template('dashboard.html', clientes=[]), 500
 
+@app.route('/clientes')
+@login_required
+def clientes():
+    try:
+        logger.info(f"Listando clientes para o usuário {current_user.id}")
+        clientes = Cliente.query.filter_by(usuario_id=current_user.id).all()
+        return render_template('clientes.html', clientes=clientes)
+    except Exception as e:
+        logger.error(f"Erro ao listar clientes: {str(e)}")
+        flash('Ocorreu um erro ao carregar a lista de clientes.', 'error')
+        return render_template('clientes.html', clientes=[])
+
 @app.route('/cliente/<int:cliente_id>/seo-roadmap')
 @login_required
 def seo_roadmap(cliente_id):
