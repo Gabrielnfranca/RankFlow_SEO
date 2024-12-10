@@ -39,8 +39,8 @@
 
                 <!-- SEO Técnico -->
                 <li class="sidebar-item">
-                    <a href="{{ url_for('seo_tecnico_kanban', cliente_id=cliente.id) }}" class="sidebar-link {% if request.endpoint == 'seo_tecnico_kanban' %}active{% endif %}">
-                        <i class="bi bi-kanban"></i>
+                    <a href="{{ url_for('seo_tecnico', cliente_id=cliente.id) }}" class="sidebar-link {% if request.endpoint == 'seo_tecnico' %}active{% endif %}">
+                        <i class="bi bi-tools"></i>
                         <span>SEO Técnico</span>
                     </a>
                 </li>

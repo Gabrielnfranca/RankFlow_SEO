@@ -1,0 +1,275 @@
+{% extends "base_cliente.html" %}
+
+{% block title %}SEO Técnico - {{ cliente.nome }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checklist-category {
+        margin-bottom: 2rem;
+    }
+    .checklist-item {
+        background: #fff;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .checklist-item:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .checklist-item.completed {
+        background: #f8fff8;
+        border-left: 4px solid #28a745;
+    }
+    .checklist-item.in-progress {
+        background: #fff8f0;
+        border-left: 4px solid #ffc107;
+    }
+    .priority-badge {
+        font-size: 0.8rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+    }
+    .priority-alta {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    .priority-media {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    .priority-baixa {
+        background: #e0e7ff;
+        color: #3730a3;
+    }
+    .doc-link {
+        font-size: 0.9rem;
+        color: #6366f1;
+        text-decoration: none;
+    }
+    .doc-link:hover {
+        text-decoration: underline;
+    }
+    .progress-bar {
+        height: 8px;
+        border-radius: 4px;
+        background: #e2e8f0;
+        margin-top: 0.5rem;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        background: #6366f1;
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">SEO Técnico</h1>
+            <p class="text-muted">Checklist técnico para {{ cliente.nome }}</p>
+        </div>
+        <div class="progress" style="width: 200px;">
+            <div class="progress-bar" role="progressbar" style="width: {{ progress }}%">
+                {{ progress }}% Concluído
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-9">
+            {% for categoria in categorias %}
+            <div class="checklist-category">
+                <h2 class="h5 mb-3">{{ categoria.nome }}</h2>
+                <p class="text-muted small mb-3">{{ categoria.descricao }}</p>
+
+                {% for item_status in itens_status[categoria.id] %}
+                <div class="checklist-item {% if item_status.status.status == 'concluido' %}completed{% elif item_status.status.status == 'em_progresso' %}in-progress{% endif %}"
+                     data-item-id="{{ item_status.item.id }}"
+                     data-cliente-id="{{ cliente.id }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input status-checkbox" type="checkbox" 
+                                           {% if item_status.status.status == 'concluido' %}checked{% endif %}
+                                           id="check-{{ item_status.item.id }}">
+                                    <label class="form-check-label" for="check-{{ item_status.item.id }}">
+                                        {{ item_status.item.nome }}
+                                    </label>
+                                </div>
+                                <span class="priority-badge priority-{{ item_status.status.prioridade }} ms-2">
+                                    {{ item_status.status.prioridade|title }}
+                                </span>
+                            </div>
+                            <p class="text-muted small mb-2">{{ item_status.item.descricao }}</p>
+                            {% if item_status.item.documentacao_url %}
+                            <a href="{{ item_status.item.documentacao_url }}" target="_blank" class="doc-link">
+                                <i class="bi bi-book"></i> Documentação
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item status-action" href="#" data-status="pendente">
+                                        <i class="bi bi-circle"></i> Pendente
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item status-action" href="#" data-status="em_progresso">
+                                        <i class="bi bi-play-circle"></i> Em Progresso
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item status-action" href="#" data-status="concluido">
+                                        <i class="bi bi-check-circle"></i> Concluído
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item priority-action" href="#" data-priority="alta">
+                                        <i class="bi bi-arrow-up-circle"></i> Alta Prioridade
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item priority-action" href="#" data-priority="media">
+                                        <i class="bi bi-dash-circle"></i> Média Prioridade
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item priority-action" href="#" data-priority="baixa">
+                                        <i class="bi bi-arrow-down-circle"></i> Baixa Prioridade
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% if item_status.status.observacoes %}
+                    <div class="mt-2 p-2 bg-light rounded">
+                        <small class="text-muted">{{ item_status.status.observacoes }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-md-3">
+            <div class="card sticky-top" style="top: 80px">
+                <div class="card-body">
+                    <h5 class="card-title">Progresso</h5>
+                    <div class="progress-bar mb-4">
+                        <div class="progress-bar-fill" style="width: {{ progress }}%"></div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Concluídos</span>
+                        <span class="badge bg-success">{{ completed_count }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Em Progresso</span>
+                        <span class="badge bg-warning">{{ in_progress_count }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span>Pendentes</span>
+                        <span class="badge bg-secondary">{{ pending_count }}</span>
+                    </div>
+
+                    <h6 class="mb-3">Prioridades</h6>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Alta</span>
+                        <span class="badge priority-badge priority-alta">{{ high_priority_count }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Média</span>
+                        <span class="badge priority-badge priority-media">{{ medium_priority_count }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Baixa</span>
+                        <span class="badge priority-badge priority-baixa">{{ low_priority_count }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Atualizar status do item
+    function updateItemStatus(itemId, clienteId, status, priority = null) {
+        const data = {
+            item_id: itemId,
+            cliente_id: clienteId,
+            status: status
+        };
+        if (priority) {
+            data.prioridade = priority;
+        }
+
+        fetch('/api/seo-tecnico/atualizar-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+
+    // Event listeners para checkboxes
+    document.querySelectorAll('.status-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const itemElement = this.closest('.checklist-item');
+            const itemId = itemElement.dataset.itemId;
+            const clienteId = itemElement.dataset.clienteId;
+            const status = this.checked ? 'concluido' : 'pendente';
+            
+            updateItemStatus(itemId, clienteId, status);
+        });
+    });
+
+    // Event listeners para ações de status
+    document.querySelectorAll('.status-action').forEach(action => {
+        action.addEventListener('click', function(e) {
+            e.preventDefault();
+            const itemElement = this.closest('.checklist-item');
+            const itemId = itemElement.dataset.itemId;
+            const clienteId = itemElement.dataset.clienteId;
+            const status = this.dataset.status;
+            
+            updateItemStatus(itemId, clienteId, status);
+        });
+    });
+
+    // Event listeners para ações de prioridade
+    document.querySelectorAll('.priority-action').forEach(action => {
+        action.addEventListener('click', function(e) {
+            e.preventDefault();
+            const itemElement = this.closest('.checklist-item');
+            const itemId = itemElement.dataset.itemId;
+            const clienteId = itemElement.dataset.clienteId;
+            const priority = this.dataset.priority;
+            
+            updateItemStatus(itemId, clienteId, null, priority);
+        });
+    });
+});
+</script>
+{% endblock %}

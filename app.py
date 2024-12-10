@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import text, inspect, func
 import os
 import logging
+from datetime import datetime
 
 # Configuração de logging
 logging.basicConfig(
@@ -90,6 +91,32 @@ class ProgressoSEO(db.Model):
     etapa_id = db.Column(db.Integer, db.ForeignKey('etapa_seo.id'), nullable=False)
     status = db.Column(db.String(20), default='todo')
     observacoes = db.Column(db.Text)
+
+class SeoTecnicoCategoria(db.Model):
+    __tablename__ = 'seo_tecnico_categoria'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.Text)
+    ordem = db.Column(db.Integer)
+
+class SeoTecnicoItem(db.Model):
+    __tablename__ = 'seo_tecnico_item'
+    id = db.Column(db.Integer, primary_key=True)
+    categoria_id = db.Column(db.Integer, db.ForeignKey('seo_tecnico_categoria.id'), nullable=False)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.Text)
+    ordem = db.Column(db.Integer)
+
+class SeoTecnicoStatus(db.Model):
+    __tablename__ = 'seo_tecnico_status'
+    id = db.Column(db.Integer, primary_key=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('seo_tecnico_item.id'), nullable=False)
+    status = db.Column(db.String(20), default='pendente')
+    prioridade = db.Column(db.String(20), default='media')
+    observacoes = db.Column(db.Text)
+    data_verificacao = db.Column(db.DateTime)
+    data_atualizacao = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
 def init_app(app):
     with app.app_context():
@@ -258,6 +285,71 @@ def health_check():
             'error': str(e),
             'type': str(type(e))
         }), 500
+
+@app.route('/cliente/<int:cliente_id>/seo-tecnico')
+@login_required
+def seo_tecnico(cliente_id):
+    cliente = Cliente.query.get_or_404(cliente_id)
+    
+    # Buscar todas as categorias ordenadas
+    categorias = db.session.query(SeoTecnicoCategoria).order_by(SeoTecnicoCategoria.ordem).all()
+    
+    # Buscar todos os itens e seus status para o cliente
+    itens_status = {}
+    for categoria in categorias:
+        itens = db.session.query(SeoTecnicoItem).filter_by(categoria_id=categoria.id).order_by(SeoTecnicoItem.ordem).all()
+        itens_status[categoria.id] = []
+        
+        for item in itens:
+            status = db.session.query(SeoTecnicoStatus).filter_by(
+                cliente_id=cliente_id,
+                item_id=item.id
+            ).first()
+            
+            if not status:
+                # Criar status padrão se não existir
+                status = SeoTecnicoStatus(
+                    cliente_id=cliente_id,
+                    item_id=item.id,
+                    status='pendente',
+                    prioridade='media'
+                )
+                db.session.add(status)
+        
+            itens_status[categoria.id].append({
+                'item': item,
+                'status': status
+            })
+    
+    db.session.commit()
+    
+    return render_template(
+        'seo_tecnico.html',
+        cliente=cliente,
+        categorias=categorias,
+        itens_status=itens_status
+    )
+
+@app.route('/api/seo-tecnico/atualizar-status', methods=['POST'])
+@login_required
+def atualizar_status_seo_tecnico():
+    data = request.json
+    status = SeoTecnicoStatus.query.filter_by(
+        cliente_id=data['cliente_id'],
+        item_id=data['item_id']
+    ).first()
+    
+    if status:
+        status.status = data['status']
+        status.prioridade = data.get('prioridade', status.prioridade)
+        status.observacoes = data.get('observacoes', status.observacoes)
+        status.data_verificacao = datetime.now() if data['status'] == 'concluido' else status.data_verificacao
+        status.data_atualizacao = datetime.now()
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    
+    return jsonify({'success': False, 'error': 'Status não encontrado'}), 404
 
 @login_manager.user_loader
 def load_user(user_id):
