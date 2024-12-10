@@ -976,3 +976,83 @@ body {
     background-color: var(--primary-color);
     transition: width 0.6s ease;
 }
+
+/* Menu Header */
+.menu-header {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--secondary-color);
+    padding: 1.25rem 1.5rem 0.5rem;
+    opacity: 0.7;
+}
+
+/* Sidebar Links */
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+    border-left-color: var(--primary-color);
+}
+
+.sidebar-link i {
+    font-size: 1.1rem;
+    width: 1.5rem;
+    margin-right: 0.75rem;
+    text-align: center;
+}
+
+/* User Info no Sidebar */
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: auto;
+}
+
+.user-info {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.user-info:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.user-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+/* Dropdown de Ações Rápidas */
+.dropdown-menu {
+    background: var(--dark-blue);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-item {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.dropdown-divider {
+    border-color: rgba(255, 255, 255, 0.1);
+}
