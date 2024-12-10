@@ -16,8 +16,8 @@ body {
     font-family: 'Open Sans', 'Helvetica Neue', sans-serif;
     margin: 0;
     padding: 0;
-    background: #ffffff;
-    color: var(--text-color);
+    background: linear-gradient(135deg, #0061f2 0%, #6ea8fe 100%);
+    color: #ffffff;
     display: flex;
     min-height: 100vh;
     font-size: 14px;
@@ -30,8 +30,8 @@ body {
     position: fixed;
     left: 0;
     top: 0;
-    background: var(--sidebar-bg);
-    color: #1a1f36;
+    background: #1a1f36;
+    color: #ffffff;
     display: flex;
     flex-direction: column;
     z-index: 1000;
@@ -56,7 +56,7 @@ body {
 .sidebar-header span {
     font-size: 18px;
     font-weight: 600;
-    color: #1a1f36;
+    color: #ffffff;
 }
 
 .sidebar-menu {
@@ -78,7 +78,7 @@ body {
 .sidebar-menu li a:hover,
 .sidebar-menu li.active a {
     background: rgba(255, 255, 255, 0.1);
-    color: #1a1f36;
+    color: #ffffff;
 }
 
 .sidebar-menu li a i {
@@ -92,14 +92,14 @@ body {
 .main-content {
     margin-left: var(--sidebar-width);
     flex: 1;
-    background: #ffffff;
+    background: #1a1f36;
     min-height: 100vh;
 }
 
 /* Header */
 .top-header {
     height: var(--header-height);
-    background: #ffffff;
+    background: #1a1f36;
     box-shadow: var(--box-shadow);
     padding: 0 30px;
     display: flex;
@@ -112,7 +112,7 @@ body {
 
 /* Cards */
 .dashboard-card {
-    background: #ffffff;
+    background: #1a1f36;
     border-radius: 8px;
     box-shadow: var(--box-shadow);
     margin-bottom: 20px;
@@ -130,7 +130,7 @@ body {
     font-size: 16px;
     font-weight: 600;
     margin: 0;
-    color: var(--text-color);
+    color: #ffffff;
 }
 
 .dashboard-card .card-body {
@@ -160,7 +160,7 @@ body {
 
 .table th {
     font-weight: 600;
-    color: #1a1f36;
+    color: #ffffff;
     border-bottom: 1px solid #eef2f4;
     padding: 15px 20px;
 }
@@ -252,7 +252,7 @@ body {
 
 .components li a {
     padding: 0.875rem 1.5rem;
-    color: var(--text-color);
+    color: #ffffff;
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -649,9 +649,6 @@ body {
 }
 
 .login-container {
-    background: #ffffff;
-    border-radius: 24px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 1000px;
     margin: 0 auto;
@@ -659,6 +656,7 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    background: transparent;
 }
 
 @media (min-width: 992px) {
@@ -669,11 +667,11 @@ body {
     .login-content {
         width: 50%;
         padding: 3.5rem;
+        color: white;
     }
 
     .login-image {
         width: 50%;
-        background: linear-gradient(135deg, #0061f2 0%, #6ea8fe 100%);
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -692,6 +690,7 @@ body {
 
     .login-content {
         padding: 2rem;
+        color: white;
     }
 
     .login-image {
@@ -707,17 +706,6 @@ body {
     .login-content {
         padding: 1.5rem;
     }
-}
-
-.login-image::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="none"/><circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/></svg>') repeat;
-    opacity: 0.1;
 }
 
 .login-image h2 {
@@ -744,50 +732,52 @@ body {
     width: 90px;
     height: auto;
     margin-bottom: 1.5rem;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    filter: brightness(0) invert(1);
 }
 
 .login-title {
-    color: #1a1f36;
+    color: white;
     font-size: 32px;
     font-weight: 700;
     margin-bottom: 0.5rem;
-    background: linear-gradient(90deg, #0061f2, #6ea8fe);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
 .login-subtitle {
-    color: #6b7280;
+    color: rgba(255, 255, 255, 0.9);
     font-size: 16px;
     margin-bottom: 2.5rem;
 }
 
 .login-form .form-label {
-    color: #1a1f36;
+    color: white;
     font-weight: 600;
     font-size: 14px;
     margin-bottom: 0.5rem;
 }
 
 .login-form .form-control {
-    border: 2px solid #e5e7eb;
+    border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     padding: 14px 18px;
     height: auto;
     font-size: 15px;
     transition: all 0.2s ease;
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.login-form .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .login-form .form-control:focus {
-    border-color: #0061f2;
-    box-shadow: 0 0 0 3px rgba(0, 97, 242, 0.1);
-    background: #ffffff;
+    border-color: white;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .login-btn {
-    background: linear-gradient(135deg, #0061f2 0%, #0044ab 100%);
+    background: white;
     border: none;
     border-radius: 12px;
     padding: 16px 28px;
@@ -796,16 +786,16 @@ body {
     width: 60%;
     margin: 1.5rem auto 0;
     transition: all 0.3s ease;
-    color: white;
+    color: #0061f2;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     display: block;
 }
 
 .login-btn:hover {
-    background: linear-gradient(135deg, #0044ab 0%, #003584 100%);
+    background: rgba(255, 255, 255, 0.9);
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0, 97, 242, 0.2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .login-btn:active {
@@ -818,20 +808,20 @@ body {
 }
 
 .login-links p {
-    color: #6b7280;
+    color: rgba(255, 255, 255, 0.9);
     font-size: 15px;
     margin-bottom: 0;
 }
 
 .login-links a {
-    color: #0061f2;
+    color: white;
     text-decoration: none;
     font-weight: 600;
     transition: color 0.2s ease;
 }
 
 .login-links a:hover {
-    color: #0044ab;
+    color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
 }
 
@@ -841,9 +831,13 @@ body {
     border: none;
     padding: 1rem;
     margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .alert-danger {
-    background-color: #fee2e2;
-    color: #991b1b;
+    background: rgba(254, 226, 226, 0.1);
+    color: white;
+    border-color: rgba(254, 226, 226, 0.3);
 }
