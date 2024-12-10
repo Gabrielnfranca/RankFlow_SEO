@@ -214,32 +214,33 @@ def cadastro():
     
     return render_template('cadastro.html')
 
-@app.route('/clientes/novo', methods=['GET', 'POST'])
+@app.route('/cliente/novo', methods=['GET', 'POST'])
 @login_required
 def novo_cliente():
     if request.method == 'POST':
-        nome = request.form.get('nome')
-        website = request.form.get('website')
-        descricao = request.form.get('descricao')
-        
-        if not nome:
-            flash('O nome do cliente é obrigatório.', 'error')
-            return redirect(url_for('novo_cliente'))
-        
         try:
-            cliente = Cliente(nome=nome, website=website, descricao=descricao, usuario_id=current_user.id)
-            db.session.add(cliente)
+            nome = request.form['nome']
+            website = request.form['website']
+            descricao = request.form['descricao']
+            
+            novo_cliente = Cliente(
+                nome=nome,
+                website=website,
+                descricao=descricao,
+                usuario_id=current_user.id  # Adiciona o ID do usuário atual
+            )
+            
+            db.session.add(novo_cliente)
             db.session.commit()
             
             flash('Cliente adicionado com sucesso!', 'success')
-            return redirect(url_for('cliente_detalhes', cliente_id=cliente.id))
-            
+            return redirect(url_for('dashboard'))
         except Exception as e:
             db.session.rollback()
-            logger.error(f"Erro ao adicionar cliente: {str(e)}")
             flash('Erro ao adicionar cliente. Por favor, tente novamente.', 'error')
-            return redirect(url_for('novo_cliente'))
-    
+            logger.error(f"Erro ao adicionar cliente: {str(e)}")
+            return render_template('novo_cliente.html')
+            
     return render_template('novo_cliente.html')
 
 @app.route('/cliente/<int:cliente_id>')
