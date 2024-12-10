@@ -392,6 +392,7 @@ def seo_tecnico(cliente_id):
         
         # Buscar todas as categorias ordenadas
         categorias = db.session.query(SeoTecnicoCategoria).order_by(SeoTecnicoCategoria.ordem).all()
+        app.logger.info(f"Categorias encontradas: {len(categorias)}")
         
         # Inicializar dicionário para armazenar itens por categoria
         itens_status = {}
@@ -407,11 +408,14 @@ def seo_tecnico(cliente_id):
         
         # Para cada categoria, buscar seus itens e status
         for categoria in categorias:
+            app.logger.info(f"Processando categoria {categoria.nome}")
             # Buscar itens da categoria
             itens = db.session.query(SeoTecnicoItem).filter_by(categoria_id=categoria.id).order_by(SeoTecnicoItem.ordem).all()
+            app.logger.info(f"Itens encontrados para categoria {categoria.nome}: {len(itens)}")
             itens_status[categoria.id] = []
             
             for item in itens:
+                app.logger.info(f"Processando item {item.nome}")
                 # Buscar ou criar status para este item
                 status = SeoTecnicoStatus.query.filter_by(
                     cliente_id=cliente_id,
@@ -419,6 +423,7 @@ def seo_tecnico(cliente_id):
                 ).first()
                 
                 if not status:
+                    app.logger.info(f"Criando novo status para item {item.nome}")
                     status = SeoTecnicoStatus(
                         cliente_id=cliente_id,
                         item_id=item.id,
@@ -454,7 +459,7 @@ def seo_tecnico(cliente_id):
         # Calcular progresso
         progress = int((completed_count / total_items * 100) if total_items > 0 else 0)
         
-        app.logger.info(f"SEO Técnico carregado com sucesso. Progresso: {progress}%")
+        app.logger.info(f"SEO Técnico carregado com sucesso. Total de itens: {total_items}, Progresso: {progress}%")
         
         return render_template('seo_tecnico.html',
             cliente=cliente,
@@ -471,6 +476,7 @@ def seo_tecnico(cliente_id):
         
     except Exception as e:
         app.logger.error(f"Erro ao carregar SEO Técnico para cliente {cliente_id}: {str(e)}")
+        app.logger.error(f"Detalhes do erro: {type(e).__name__} - {str(e)}")
         flash('Erro ao carregar o módulo SEO Técnico.', 'danger')
         return redirect(url_for('detalhe_cliente', id=cliente_id))
 

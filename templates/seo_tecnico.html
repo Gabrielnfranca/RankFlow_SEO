@@ -2,6 +2,7 @@
 
 {% block title %}SEO Técnico - {{ cliente.nome }}{% endblock %}
 
+{% block content %}
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
@@ -167,6 +168,7 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block scripts %}
 <script>
@@ -196,41 +198,37 @@ function updateItemStatus(itemId, clienteId, status, priority = null) {
     .catch(error => console.error('Error:', error));
 }
 
-// Event listeners para checkboxes
-document.querySelectorAll('.status-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-        const itemElement = this.closest('.checklist-item');
-        const itemId = itemElement.dataset.itemId;
-        const clienteId = itemElement.dataset.clienteId;
-        const status = this.checked ? 'concluido' : 'pendente';
-        
-        updateItemStatus(itemId, clienteId, status);
+document.addEventListener('DOMContentLoaded', function() {
+    // Event listeners para checkboxes
+    document.querySelectorAll('.status-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const itemId = this.closest('.checklist-item').dataset.itemId;
+            const clienteId = this.closest('.checklist-item').dataset.clienteId;
+            const status = this.checked ? 'concluido' : 'pendente';
+            updateItemStatus(itemId, clienteId, status);
+        });
     });
-});
 
-// Event listeners para ações de status
-document.querySelectorAll('.status-action').forEach(link => {
-    link.addEventListener('click', function(e) {
-        e.preventDefault();
-        const itemElement = this.closest('.checklist-item');
-        const itemId = itemElement.dataset.itemId;
-        const clienteId = itemElement.dataset.clienteId;
-        const status = this.dataset.status;
-        
-        updateItemStatus(itemId, clienteId, status);
+    // Event listeners para ações de status
+    document.querySelectorAll('.status-action').forEach(action => {
+        action.addEventListener('click', function(e) {
+            e.preventDefault();
+            const itemId = this.closest('.checklist-item').dataset.itemId;
+            const clienteId = this.closest('.checklist-item').dataset.clienteId;
+            const status = this.dataset.status;
+            updateItemStatus(itemId, clienteId, status);
+        });
     });
-});
 
-// Event listeners para ações de prioridade
-document.querySelectorAll('.priority-action').forEach(link => {
-    link.addEventListener('click', function(e) {
-        e.preventDefault();
-        const itemElement = this.closest('.checklist-item');
-        const itemId = itemElement.dataset.itemId;
-        const clienteId = itemElement.dataset.clienteId;
-        const priority = this.dataset.priority;
-        
-        updateItemStatus(itemId, clienteId, null, priority);
+    // Event listeners para ações de prioridade
+    document.querySelectorAll('.priority-action').forEach(action => {
+        action.addEventListener('click', function(e) {
+            e.preventDefault();
+            const itemId = this.closest('.checklist-item').dataset.itemId;
+            const clienteId = this.closest('.checklist-item').dataset.clienteId;
+            const priority = this.dataset.priority;
+            updateItemStatus(itemId, clienteId, null, priority);
+        });
     });
 });
 </script>
