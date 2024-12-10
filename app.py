@@ -7,6 +7,7 @@ import json
 from flask_sqlalchemy import SQLAlchemy
 from urllib.parse import urlparse
 import logging
+from sqlalchemy import text
 
 # Configuração de logging
 logging.basicConfig(
@@ -30,6 +31,49 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicializa o SQLAlchemy
 db = SQLAlchemy(app)
+
+# Modelos do banco de dados
+class Usuario(UserMixin, db.Model):
+    __tablename__ = 'usuario'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    senha = db.Column(db.String(255), nullable=False)
+    nome = db.Column(db.String(80), nullable=False)
+
+class Cliente(db.Model):
+    __tablename__ = 'cliente'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(120))
+    telefone = db.Column(db.String(20))
+    website = db.Column(db.String(200))
+    observacoes = db.Column(db.Text)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    tarefas = db.relationship('Tarefa', backref='cliente', lazy=True)
+
+class Tarefa(db.Model):
+    __tablename__ = 'tarefa'
+    id = db.Column(db.Integer, primary_key=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
+    titulo = db.Column(db.String(200), nullable=False)
+    descricao = db.Column(db.Text)
+    prazo = db.Column(db.Date)
+    status = db.Column(db.String(20), default='pendente')
+
+class EtapaSEO(db.Model):
+    __tablename__ = 'etapa_seo'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.Text)
+    ordem = db.Column(db.Integer)
+
+class ProgressoSEO(db.Model):
+    __tablename__ = 'progresso_seo'
+    id = db.Column(db.Integer, primary_key=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
+    etapa_id = db.Column(db.Integer, db.ForeignKey('etapa_seo.id'), nullable=False)
+    status = db.Column(db.String(20), default='todo')
+    observacoes = db.Column(db.Text)
 
 # Configuração do LoginManager
 login_manager = LoginManager()
@@ -70,7 +114,7 @@ init_app(app)
 def health_check():
     try:
         # Tenta fazer uma consulta simples
-        db.session.execute('SELECT 1')
+        db.session.execute(text('SELECT 1'))
         tables = db.engine.table_names()
         return jsonify({
             'status': 'healthy',
@@ -83,56 +127,6 @@ def health_check():
             'error': str(e),
             'type': str(type(e))
         }), 500
-
-# Modelos do banco de dados
-class Usuario(UserMixin, db.Model):
-    __tablename__ = 'usuario'
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    senha = db.Column(db.String(200), nullable=False)
-    nome = db.Column(db.String(80), nullable=False)
-    
-    def get_id(self):
-        return str(self.id)
-
-class Cliente(db.Model):
-    __tablename__ = 'cliente'
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    website = db.Column(db.String(200))
-    descricao = db.Column(db.Text)
-    data_criacao = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
-    tarefas = db.relationship('Tarefa', backref='cliente', lazy=True)
-
-class Tarefa(db.Model):
-    __tablename__ = 'tarefa'
-    id = db.Column(db.Integer, primary_key=True)
-    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
-    titulo = db.Column(db.String(100), nullable=False)
-    descricao = db.Column(db.Text)
-    status = db.Column(db.String(20), default='todo')
-    prioridade = db.Column(db.String(20), default='medium')
-    checklist = db.Column(db.Text)
-    data_criacao = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    data_atualizacao = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-
-class EtapaSEO(db.Model):
-    __tablename__ = 'etapa_seo'
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    descricao = db.Column(db.Text)
-    peso = db.Column(db.Integer, nullable=False)
-    categoria = db.Column(db.String(50), nullable=False)
-    status = db.Column(db.String(20), default='todo')
-
-class ProgressoSEO(db.Model):
-    __tablename__ = 'progresso_seo'
-    id = db.Column(db.Integer, primary_key=True)
-    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
-    etapa_id = db.Column(db.Integer, db.ForeignKey('etapa_seo.id'), nullable=False)
-    status = db.Column(db.String(20), default='todo')
-    observacoes = db.Column(db.Text)
 
 @login_manager.user_loader
 def load_user(user_id):
