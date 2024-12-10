@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import text, inspect
+from sqlalchemy import text, inspect, func
 import os
 import logging
 
@@ -58,6 +58,14 @@ class Cliente(db.Model):
     website = db.Column(db.String(200))
     descricao = db.Column(db.Text)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
+    def __init__(self, nome, website=None, descricao=None, usuario_id=None):
+        self.nome = nome
+        self.website = website
+        self.descricao = descricao
+        self.usuario_id = usuario_id
 
 class Tarefa(db.Model):
     __tablename__ = 'tarefa'
@@ -150,8 +158,13 @@ def dashboard():
 @app.route('/cliente/<int:id>')
 @login_required
 def detalhe_cliente(id):
-    cliente = Cliente.query.get_or_404(id)
-    return render_template('detalhe_cliente.html', cliente=cliente)
+    try:
+        cliente = Cliente.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
+        return render_template('detalhe_cliente.html', cliente=cliente)
+    except Exception as e:
+        logger.error(f"Erro ao carregar detalhes do cliente {id}: {str(e)}")
+        flash('Erro ao carregar detalhes do cliente.', 'danger')
+        return redirect(url_for('dashboard'))
 
 @app.route('/novo-cliente', methods=['GET', 'POST'])
 @login_required

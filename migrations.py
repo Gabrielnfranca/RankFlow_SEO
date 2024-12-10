@@ -72,6 +72,19 @@ def run_migrations():
         add_column_if_not_exists('cliente', 'descricao', 'TEXT')
         add_column_if_not_exists('cliente', 'usuario_id', 'INTEGER')
         add_column_if_not_exists('cliente', 'data_criacao', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
+        add_column_if_not_exists('cliente', 'created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
+        add_column_if_not_exists('cliente', 'updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
+        
+        # Atualiza os registros existentes com timestamps
+        with db.engine.connect() as conn:
+            query = text('''
+                UPDATE cliente 
+                SET created_at = CURRENT_TIMESTAMP, 
+                    updated_at = CURRENT_TIMESTAMP 
+                WHERE created_at IS NULL
+            ''')
+            conn.execute(query)
+            conn.commit()
         
         # Migrações para a tabela tarefa
         add_column_if_not_exists('tarefa', 'titulo', 'TEXT')
