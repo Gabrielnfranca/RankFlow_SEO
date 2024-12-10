@@ -227,15 +227,65 @@ def detalhe_cliente(id):
         # Verificar se o cliente existe e pertence ao usuário atual
         cliente = Cliente.query.filter_by(id=id, usuario_id=current_user.id).first()
         if not cliente:
+            logger.warning(f"Cliente {id} não encontrado ou não pertence ao usuário {current_user.id}")
             flash('Cliente não encontrado.', 'danger')
             return redirect(url_for('dashboard'))
             
-        logger.info(f"Acessando detalhes do cliente {id}")
-        return render_template('detalhe_cliente.html', cliente=cliente)
+        logger.info(f"Carregando detalhes do cliente {id}")
         
+        # Buscar dados adicionais
+        keywords_count = 0  # TODO: Implementar contagem real
+        improved_rankings = 0  # TODO: Implementar contagem real
+        total_rankings = 1  # Para evitar divisão por zero
+        completed_tasks = 0  # TODO: Implementar contagem real
+        total_tasks = 1  # Para evitar divisão por zero
+        reports_count = 0  # TODO: Implementar contagem real
+        
+        # Simular algumas atividades recentes
+        activities = [
+            {
+                'title': 'Análise SEO Técnica',
+                'description': 'Análise técnica do site concluída',
+                'date': datetime.now()
+            },
+            {
+                'title': 'Nova Palavra-chave',
+                'description': 'Adicionada nova palavra-chave para monitoramento',
+                'date': datetime.now()
+            }
+        ]
+        
+        # Simular algumas palavras-chave
+        keywords = [
+            {
+                'termo': 'marketing digital',
+                'posicao': 5,
+                'status': 'up',
+                'variacao': 2
+            },
+            {
+                'termo': 'seo otimização',
+                'posicao': 8,
+                'status': 'down',
+                'variacao': 1
+            }
+        ]
+        
+        logger.info(f"Renderizando template com os dados do cliente {id}")
+        return render_template('detalhe_cliente.html',
+            cliente=cliente,
+            keywords_count=keywords_count,
+            improved_rankings=improved_rankings,
+            total_rankings=total_rankings,
+            completed_tasks=completed_tasks,
+            total_tasks=total_tasks,
+            reports_count=reports_count,
+            activities=activities,
+            keywords=keywords
+        )
     except Exception as e:
         logger.error(f"Erro ao carregar detalhes do cliente {id}: {str(e)}")
-        flash('Erro ao carregar detalhes do cliente.', 'danger')
+        flash('Erro ao carregar os detalhes do cliente.', 'danger')
         return redirect(url_for('dashboard'))
 
 @app.route('/novo-cliente', methods=['GET', 'POST'])

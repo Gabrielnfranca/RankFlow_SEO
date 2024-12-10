@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ client.nome }} - Detalhes do Cliente{% endblock %}
+{% block title %}{{ cliente.nome }} - Detalhes do Cliente{% endblock %}
 
 {% block content %}
 <!-- Breadcrumb -->
@@ -8,7 +8,7 @@
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Painel</a></li>
         <li class="breadcrumb-item"><a href="{{ url_for('clientes') }}">Clientes</a></li>
-        <li class="breadcrumb-item active" aria-current="page">{{ client.nome }}</li>
+        <li class="breadcrumb-item active" aria-current="page">{{ cliente.nome }}</li>
     </ol>
 </nav>
 
@@ -18,20 +18,20 @@
         <div class="col-auto">
             <div class="avatar-lg">
                 <span class="avatar-title rounded-circle bg-primary">
-                    {{ client.nome[0] | upper }}
+                    {{ cliente.nome[0] | upper }}
                 </span>
             </div>
         </div>
         <div class="col">
-            <h2 class="mb-1">{{ client.nome }}</h2>
+            <h2 class="mb-1">{{ cliente.nome }}</h2>
             <p class="mb-0 text-muted">
-                <i class="bi bi-globe me-2"></i>{{ client.website }}
+                <i class="bi bi-globe me-2"></i>{{ cliente.website }}
                 <span class="mx-2">•</span>
-                <i class="bi bi-calendar-event me-2"></i>Cliente desde {{ client.data_cadastro.strftime('%d/%m/%Y') }}
+                <i class="bi bi-calendar-event me-2"></i>Cliente desde {{ cliente.data_cadastro.strftime('%d/%m/%Y') }}
             </p>
         </div>
         <div class="col-auto">
-            <a href="{{ url_for('editar_cliente', id=client.id) }}" class="btn btn-primary">
+            <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="btn btn-primary">
                 <i class="bi bi-pencil me-2"></i>Editar Cliente
             </a>
         </div>
