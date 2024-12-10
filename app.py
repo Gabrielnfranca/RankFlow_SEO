@@ -33,6 +33,8 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+login_manager.login_message = 'Por favor, faça login para acessar esta página.'
+login_manager.login_message_category = 'info'
 
 # Modelos do banco de dados
 class Usuario(UserMixin, db.Model):
@@ -201,17 +203,31 @@ def load_user(user_id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+
     if request.method == 'POST':
         email = request.form.get('email')
         senha = request.form.get('senha')
         
-        user = Usuario.query.filter_by(email=email).first()
+        if not email or not senha:
+            flash('Por favor, preencha todos os campos.', 'error')
+            return render_template('login.html')
         
-        if user and check_password_hash(user.senha, senha):
-            login_user(user)
-            return redirect(url_for('dashboard'))
-        
-        flash('Email ou senha inválidos.', 'error')
+        try:
+            user = Usuario.query.filter_by(email=email).first()
+            
+            if user and check_password_hash(user.senha, senha):
+                login_user(user)
+                next_page = request.args.get('next')
+                if next_page and next_page.startswith('/'):
+                    return redirect(next_page)
+                return redirect(url_for('dashboard'))
+            
+            flash('Email ou senha inválidos.', 'error')
+        except Exception as e:
+            logger.error(f"Erro no login: {str(e)}")
+            flash('Ocorreu um erro ao tentar fazer login. Por favor, tente novamente.', 'error')
     
     return render_template('login.html')
 
