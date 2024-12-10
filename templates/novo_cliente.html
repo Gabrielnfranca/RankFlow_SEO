@@ -79,10 +79,13 @@
                                         {% endfor %}
                                     {% endif %}
                                 {% endwith %}
-                                <form method="POST" action="{{ url_for('novo_cliente') }}">
+                                <form method="POST" action="{{ url_for('novo_cliente') }}" class="needs-validation" novalidate>
                                     <div class="mb-4">
                                         <label for="nome" class="form-label">Nome do Cliente</label>
                                         <input type="text" class="form-control form-control-lg" id="nome" name="nome" required>
+                                        <div class="invalid-feedback">
+                                            Por favor, insira o nome do cliente.
+                                        </div>
                                     </div>
                                     <div class="mb-4">
                                         <label for="website" class="form-label">Website</label>
