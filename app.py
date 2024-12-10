@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, g
+from flask import Flask, render_template, request, redirect, url_for, flash, g, jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
@@ -8,16 +8,27 @@ from flask_sqlalchemy import SQLAlchemy
 from urllib.parse import urlparse
 import logging
 
+# Configuração de logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'sua_chave_secreta_aqui')
 
 # Configuração do banco de dados
-DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///rankflow.db')
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if not DATABASE_URL:
+    DATABASE_URL = 'sqlite:///rankflow.db'
+elif DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Inicializa o SQLAlchemy
 db = SQLAlchemy(app)
 
 # Configuração do LoginManager
@@ -25,17 +36,54 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# Configuração de logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+@app.before_first_request
+def create_tables():
+    try:
+        logger.info("Tentando criar tabelas...")
+        db.create_all()
+        logger.info("Tabelas criadas com sucesso!")
+        
+        # Verifica se já existe um usuário admin
+        admin = Usuario.query.filter_by(email='admin@admin.com').first()
+        if not admin:
+            logger.info("Criando usuário admin...")
+            hashed_password = generate_password_hash('admin123', method='pbkdf2:sha256')
+            admin = Usuario(
+                email='admin@admin.com',
+                senha=hashed_password,
+                nome='Administrador'
+            )
+            db.session.add(admin)
+            db.session.commit()
+            logger.info("Usuário admin criado com sucesso!")
+        else:
+            logger.info("Usuário admin já existe!")
+    except Exception as e:
+        logger.error(f"Erro ao criar tabelas: {str(e)}")
+        if hasattr(e, '__cause__'):
+            logger.error(f"Causa do erro: {e.__cause__}")
 
-@app.teardown_appcontext
-def close_db(error):
-    if hasattr(g, 'db'):
-        g.db.close()
+@app.route('/health')
+def health_check():
+    try:
+        # Tenta fazer uma consulta simples
+        db.session.execute('SELECT 1')
+        tables = db.engine.table_names()
+        return jsonify({
+            'status': 'healthy',
+            'database': 'connected',
+            'tables': tables
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'type': str(type(e))
+        }), 500
 
 # Modelos do banco de dados
 class Usuario(UserMixin, db.Model):
+    __tablename__ = 'usuario'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha = db.Column(db.String(200), nullable=False)
@@ -45,6 +93,7 @@ class Usuario(UserMixin, db.Model):
         return str(self.id)
 
 class Cliente(db.Model):
+    __tablename__ = 'cliente'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     website = db.Column(db.String(200))
@@ -54,6 +103,7 @@ class Cliente(db.Model):
     tarefas = db.relationship('Tarefa', backref='cliente', lazy=True)
 
 class Tarefa(db.Model):
+    __tablename__ = 'tarefa'
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
     titulo = db.Column(db.String(100), nullable=False)
@@ -65,6 +115,7 @@ class Tarefa(db.Model):
     data_atualizacao = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
 class EtapaSEO(db.Model):
+    __tablename__ = 'etapa_seo'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     descricao = db.Column(db.Text)
@@ -73,6 +124,7 @@ class EtapaSEO(db.Model):
     status = db.Column(db.String(20), default='todo')
 
 class ProgressoSEO(db.Model):
+    __tablename__ = 'progresso_seo'
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
     etapa_id = db.Column(db.Integer, db.ForeignKey('etapa_seo.id'), nullable=False)
@@ -87,27 +139,10 @@ def load_user(user_id):
         logger.error(f"Erro ao carregar usuário: {str(e)}")
         return None
 
-def init_db():
-    try:
-        with app.app_context():
-            # Criar todas as tabelas
-            db.create_all()
-            
-            # Verificar se já existe um usuário admin
-            admin = Usuario.query.filter_by(email='admin@rankflow.com').first()
-            if not admin:
-                # Criar usuário admin
-                senha_hash = generate_password_hash('admin123')
-                admin = Usuario(
-                    email='admin@rankflow.com',
-                    senha=senha_hash,
-                    nome='Administrador'
-                )
-                db.session.add(admin)
-                db.session.commit()
-                logger.info("Usuário admin criado com sucesso!")
-    except Exception as e:
-        logger.error(f"Erro ao inicializar banco de dados: {str(e)}")
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, 'db'):
+        g.db.close()
 
 @app.route('/')
 def index():
@@ -569,6 +604,4 @@ def seo_tecnico_kanban(cliente_id):
                          progress=progress)
 
 if __name__ == '__main__':
-    with app.app_context():
-        init_db()
     app.run(debug=True, port=5000)
