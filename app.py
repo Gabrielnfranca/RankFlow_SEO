@@ -36,32 +36,35 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-@app.before_first_request
-def create_tables():
-    try:
-        logger.info("Tentando criar tabelas...")
-        db.create_all()
-        logger.info("Tabelas criadas com sucesso!")
-        
-        # Verifica se já existe um usuário admin
-        admin = Usuario.query.filter_by(email='admin@admin.com').first()
-        if not admin:
-            logger.info("Criando usuário admin...")
-            hashed_password = generate_password_hash('admin123', method='pbkdf2:sha256')
-            admin = Usuario(
-                email='admin@admin.com',
-                senha=hashed_password,
-                nome='Administrador'
-            )
-            db.session.add(admin)
-            db.session.commit()
-            logger.info("Usuário admin criado com sucesso!")
-        else:
-            logger.info("Usuário admin já existe!")
-    except Exception as e:
-        logger.error(f"Erro ao criar tabelas: {str(e)}")
-        if hasattr(e, '__cause__'):
-            logger.error(f"Causa do erro: {e.__cause__}")
+def init_app(app):
+    with app.app_context():
+        try:
+            logger.info("Tentando criar tabelas...")
+            db.create_all()
+            logger.info("Tabelas criadas com sucesso!")
+            
+            # Verifica se já existe um usuário admin
+            admin = Usuario.query.filter_by(email='admin@admin.com').first()
+            if not admin:
+                logger.info("Criando usuário admin...")
+                hashed_password = generate_password_hash('admin123', method='pbkdf2:sha256')
+                admin = Usuario(
+                    email='admin@admin.com',
+                    senha=hashed_password,
+                    nome='Administrador'
+                )
+                db.session.add(admin)
+                db.session.commit()
+                logger.info("Usuário admin criado com sucesso!")
+            else:
+                logger.info("Usuário admin já existe!")
+        except Exception as e:
+            logger.error(f"Erro ao criar tabelas: {str(e)}")
+            if hasattr(e, '__cause__'):
+                logger.error(f"Causa do erro: {e.__cause__}")
+
+# Inicializa o app
+init_app(app)
 
 @app.route('/health')
 def health_check():
