@@ -7,7 +7,7 @@ import json
 from flask_sqlalchemy import SQLAlchemy
 from urllib.parse import urlparse
 import logging
-from sqlalchemy import text
+from sqlalchemy import text, inspect
 
 # Configuração de logging
 logging.basicConfig(
@@ -115,7 +115,11 @@ def health_check():
     try:
         # Tenta fazer uma consulta simples
         db.session.execute(text('SELECT 1'))
-        tables = db.engine.table_names()
+        
+        # Lista todas as tabelas
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        
         return jsonify({
             'status': 'healthy',
             'database': 'connected',
