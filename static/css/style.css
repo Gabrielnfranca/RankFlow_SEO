@@ -643,7 +643,8 @@ body {
     background: linear-gradient(135deg, #0061f2 0%, #6ea8fe 100%);
     display: flex;
     align-items: center;
-    padding: 2rem 0;
+    justify-content: center;
+    padding: 1rem;
     font-family: 'Inter', sans-serif;
 }
 
@@ -652,25 +653,26 @@ body {
     border-radius: 24px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     width: 100%;
+    max-width: 1000px;
     margin: 0 auto;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Otimização para Desktop */
 @media (min-width: 992px) {
     .login-container {
-        max-width: 1000px;
-        display: grid;
-        grid-template-columns: 1.2fr 1fr;
+        flex-direction: row;
     }
 
     .login-content {
-        background: #ffffff;
+        width: 50%;
         padding: 3.5rem;
     }
 
     .login-image {
+        width: 50%;
         background: linear-gradient(135deg, #0061f2 0%, #6ea8fe 100%);
         display: flex;
         flex-direction: column;
@@ -680,46 +682,62 @@ body {
         position: relative;
         overflow: hidden;
     }
+}
 
-    .login-image::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="none"/><circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/></svg>') repeat;
-        opacity: 0.1;
+@media (max-width: 991.98px) {
+    .login-container {
+        margin: 1rem;
+        max-width: 500px;
     }
 
-    .login-image h2 {
-        color: white;
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        text-align: center;
-        position: relative;
-        z-index: 1;
+    .login-content {
+        padding: 2rem;
     }
 
-    .login-image p {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 1.1rem;
-        text-align: center;
-        max-width: 400px;
-        line-height: 1.6;
-        position: relative;
-        z-index: 1;
+    .login-image {
+        display: none;
     }
 }
 
-/* Versão Mobile */
-@media (max-width: 991.98px) {
+@media (max-width: 480px) {
     .login-container {
-        padding: 2.5rem;
-        margin: 1rem;
-        background: #ffffff;
+        margin: 0.5rem;
     }
+
+    .login-content {
+        padding: 1.5rem;
+    }
+}
+
+.login-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="none"/><circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/></svg>') repeat;
+    opacity: 0.1;
+}
+
+.login-image h2 {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.login-image p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    text-align: center;
+    max-width: 400px;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
 }
 
 .login-logo {
