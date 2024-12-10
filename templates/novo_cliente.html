@@ -1,120 +1,58 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novo Cliente - RankFlow</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body class="dashboard-body">
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="RankFlow Logo" class="logo">
-            <span>RankFlow</span>
-        </div>
-        <ul class="sidebar-menu">
-            <li>
-                <a href="{{ url_for('dashboard') }}">
-                    <i class="bi bi-speedometer2"></i>
-                    <span>Dashboard</span>
+{% extends "base_dashboard.html" %}
+
+{% block title %}Novo Cliente{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">Novo Cliente</h1>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Voltar
                 </a>
-            </li>
-            <li class="active">
-                <a href="{{ url_for('novo_cliente') }}">
-                    <i class="bi bi-plus-circle"></i>
-                    <span>Novo Cliente</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <i class="bi bi-graph-up"></i>
-                    <span>Rankings</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <i class="bi bi-gear"></i>
-                    <span>Configurações</span>
-                </a>
-            </li>
-        </ul>
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <img src="https://ui-avatars.com/api/?name={{ current_user.nome }}&background=random" alt="Avatar" class="avatar">
-                <span>{{ current_user.nome }}</span>
             </div>
-            <a href="{{ url_for('logout') }}" class="logout-btn">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sair</span>
-            </a>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <nav class="top-nav">
-            <div class="container-fluid">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h1 class="page-title">Novo Cliente</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-            </div>
-        </nav>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-        <div class="dashboard-content">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-8 mx-auto">
-                        <div class="content-card">
-                            <div class="card-body">
-                                {% with messages = get_flashed_messages(with_categories=true) %}
-                                    {% if messages %}
-                                        {% for category, message in messages %}
-                                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                                {{ message }}
-                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                            </div>
-                                        {% endfor %}
-                                    {% endif %}
-                                {% endwith %}
-                                <form method="POST" action="{{ url_for('novo_cliente') }}" class="needs-validation" novalidate>
-                                    <div class="mb-4">
-                                        <label for="nome" class="form-label">Nome do Cliente</label>
-                                        <input type="text" class="form-control form-control-lg" id="nome" name="nome" required>
-                                        <div class="invalid-feedback">
-                                            Por favor, insira o nome do cliente.
-                                        </div>
-                                    </div>
-                                    <div class="mb-4">
-                                        <label for="website" class="form-label">Website</label>
-                                        <input type="url" class="form-control form-control-lg" id="website" name="website"
-                                               placeholder="https://exemplo.com">
-                                    </div>
-                                    <div class="mb-4">
-                                        <label for="descricao" class="form-label">Descrição</label>
-                                        <textarea class="form-control form-control-lg" id="descricao" name="descricao" rows="4"
-                                                  placeholder="Descreva o negócio do cliente e seus objetivos de SEO"></textarea>
-                                    </div>
-                                    <div class="d-grid gap-2">
-                                        <button type="submit" class="btn btn-primary btn-lg">
-                                            <i class="bi bi-plus-circle me-2"></i>
-                                            Adicionar Cliente
-                                        </button>
-                                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-lg">
-                                            Cancelar
-                                        </a>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('novo_cliente') }}" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome do Cliente</label>
+                    <input type="text" class="form-control" id="nome" name="nome" required>
+                    <div class="invalid-feedback">
+                        Por favor, insira o nome do cliente.
                     </div>
                 </div>
-            </div>
+                <div class="mb-3">
+                    <label for="website" class="form-label">Website</label>
+                    <input type="url" class="form-control" id="website" name="website" placeholder="https://">
+                </div>
+                <div class="mb-3">
+                    <label for="descricao" class="form-label">Descrição</label>
+                    <textarea class="form-control" id="descricao" name="descricao" rows="3" placeholder="Descreva o negócio do cliente e seus objetivos de SEO"></textarea>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-light">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Adicionar Cliente
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</div>
+{% endblock %}

@@ -1,52 +1,64 @@
-{% extends "base.html" %}
+{% extends "base_dashboard.html" %}
 
-{% block page_title %}
-<h1 class="page-title mb-0">Editar Cliente</h1>
-{% endblock %}
+{% block title %}Editar Cliente{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Editar Cliente</h5>
+<div class="container-fluid px-4 py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">Editar Cliente</h1>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Voltar
+                </a>
             </div>
-            <div class="card-body">
-                <form method="POST">
-                    <div class="mb-3">
-                        <label for="nome" class="form-label">Nome do Cliente *</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="nome" 
-                               name="nome" 
-                               value="{{ cliente.nome }}"
-                               required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="website" class="form-label">Website</label>
-                        <input type="url" 
-                               class="form-control" 
-                               id="website" 
-                               name="website"
-                               value="{{ cliente.website or '' }}"
-                               placeholder="https://exemplo.com">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="descricao" class="form-label">Descrição</label>
-                        <textarea class="form-control" 
-                                  id="descricao" 
-                                  name="descricao" 
-                                  rows="3">{{ cliente.descricao or '' }}</textarea>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancelar</a>
-                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                    </div>
-                </form>
-            </div>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome do Cliente *</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="nome" 
+                           name="nome" 
+                           value="{{ cliente.nome }}"
+                           required>
+                </div>
+                <div class="mb-3">
+                    <label for="website" class="form-label">Website</label>
+                    <input type="url" 
+                           class="form-control" 
+                           id="website" 
+                           name="website"
+                           value="{{ cliente.website or '' }}"
+                           placeholder="https://exemplo.com">
+                </div>
+                <div class="mb-3">
+                    <label for="descricao" class="form-label">Descrição</label>
+                    <textarea class="form-control" 
+                              id="descricao" 
+                              name="descricao" 
+                              rows="3">{{ cliente.descricao or '' }}</textarea>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-light">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

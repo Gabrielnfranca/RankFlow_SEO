@@ -90,6 +90,10 @@ def init_app(app):
             db.create_all()
             logger.info("Tabelas criadas com sucesso!")
             
+            # Executa as migrações para garantir que todas as colunas existam
+            from migrations import run_migrations
+            run_migrations()
+            
             # Verifica se já existe um usuário admin
             admin = Usuario.query.filter_by(email='admin@admin.com').first()
             if not admin:
@@ -106,9 +110,10 @@ def init_app(app):
             else:
                 logger.info("Usuário admin já existe!")
         except Exception as e:
-            logger.error(f"Erro ao criar tabelas: {str(e)}")
+            logger.error(f"Erro durante a inicialização: {str(e)}")
             if hasattr(e, '__cause__'):
                 logger.error(f"Causa do erro: {e.__cause__}")
+            raise
 
 # Inicializa o app
 init_app(app)
@@ -136,52 +141,74 @@ def dashboard():
 @app.route('/cliente/novo', methods=['GET', 'POST'])
 @login_required
 def novo_cliente():
-    if request.method == 'POST':
-        try:
-            # Log dos dados recebidos
-            logger.info("Dados do formulário recebidos:")
-            logger.info(f"Nome: {request.form.get('nome')}")
-            logger.info(f"Website: {request.form.get('website')}")
-            logger.info(f"Descrição: {request.form.get('descricao')}")
-            
-            # Obtém os dados do formulário
+    try:
+        if request.method == 'POST':
             nome = request.form.get('nome')
             website = request.form.get('website')
             descricao = request.form.get('descricao')
-            
-            # Validação básica
+
             if not nome:
-                flash('O nome do cliente é obrigatório.', 'error')
+                flash('O nome do cliente é obrigatório.', 'danger')
                 return render_template('novo_cliente.html')
-            
-            # Cria o novo cliente
-            novo_cliente = Cliente(
+
+            cliente = Cliente(
                 nome=nome,
                 website=website,
                 descricao=descricao,
                 usuario_id=current_user.id
             )
-            
-            # Log antes de adicionar ao banco
-            logger.info("Tentando adicionar cliente ao banco de dados")
-            
-            # Adiciona e salva no banco de dados
-            db.session.add(novo_cliente)
+
+            db.session.add(cliente)
             db.session.commit()
-            
-            logger.info("Cliente adicionado com sucesso!")
+
             flash('Cliente adicionado com sucesso!', 'success')
             return redirect(url_for('dashboard'))
-            
-        except Exception as e:
-            db.session.rollback()
-            logger.error(f"Erro ao adicionar cliente: {str(e)}")
-            if hasattr(e, '__cause__'):
-                logger.error(f"Causa do erro: {e.__cause__}")
-            flash('Erro ao adicionar cliente. Por favor, tente novamente.', 'error')
-            return render_template('novo_cliente.html')
-    
-    return render_template('novo_cliente.html')
+
+        return render_template('novo_cliente.html')
+    except Exception as e:
+        logger.error(f"Erro ao adicionar cliente: {str(e)}", exc_info=True)
+        db.session.rollback()
+        flash('Erro ao adicionar cliente. Por favor, tente novamente.', 'danger')
+        return render_template('novo_cliente.html')
+
+@app.route('/cliente/<int:id>/editar', methods=['GET', 'POST'])
+@login_required
+def editar_cliente(id):
+    try:
+        cliente = Cliente.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
+
+        if request.method == 'POST':
+            cliente.nome = request.form.get('nome')
+            cliente.website = request.form.get('website')
+            cliente.descricao = request.form.get('descricao')
+
+            if not cliente.nome:
+                flash('O nome do cliente é obrigatório.', 'danger')
+                return render_template('editar_cliente.html', cliente=cliente)
+
+            db.session.commit()
+            flash('Cliente atualizado com sucesso!', 'success')
+            return redirect(url_for('dashboard'))
+
+        return render_template('editar_cliente.html', cliente=cliente)
+    except Exception as e:
+        logger.error(f"Erro ao editar cliente: {str(e)}", exc_info=True)
+        db.session.rollback()
+        flash('Erro ao editar cliente. Por favor, tente novamente.', 'danger')
+        return redirect(url_for('dashboard'))
+
+@app.route('/cliente/<int:id>/excluir', methods=['POST'])
+@login_required
+def excluir_cliente(id):
+    try:
+        cliente = Cliente.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
+        db.session.delete(cliente)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Cliente excluído com sucesso!'})
+    except Exception as e:
+        logger.error(f"Erro ao excluir cliente: {str(e)}", exc_info=True)
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Erro ao excluir cliente.'}), 500
 
 @app.route('/health')
 def health_check():

@@ -3,163 +3,113 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="d-flex justify-content-between align-items-center">
-        <h1 class="page-title">Meus Clientes</h1>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoClienteModal">
-            <i class="bi bi-plus-lg"></i>
-            <span>Novo Cliente</span>
-        </button>
-    </div>
-</div>
-
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<div class="container-fluid px-4 py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">Meus Clientes</h1>
+                <button type="button" class="btn btn-primary" onclick="location.href='{{ url_for('novo_cliente') }}'">
+                    <i class="bi bi-plus-lg me-2"></i>Novo Cliente
+                </button>
             </div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+        </div>
+    </div>
 
-<div class="table-responsive">
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col" style="width: 40%">Nome do Cliente</th>
-                <th scope="col" style="width: 35%">Website</th>
-                <th scope="col" style="width: 25%" class="text-end">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card">
+        <div class="card-body">
             {% if clientes %}
-                {% for cliente in clientes %}
-                <tr>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <div class="client-avatar">{{ cliente.nome[:2].upper() }}</div>
-                            <span class="ms-2">{{ cliente.nome }}</span>
-                        </div>
-                    </td>
-                    <td>{{ cliente.website or '-' }}</td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-primary me-2" onclick="editarCliente('{{ cliente.id }}', '{{ cliente.nome }}', '{{ cliente.website or '' }}', '{{ cliente.descricao or '' }}')">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="excluirCliente('{{ cliente.id }}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nome do Cliente</th>
+                                <th>Website</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cliente in clientes %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-primary text-white">
+                                                {{ cliente.nome[:2].upper() }}
+                                            </div>
+                                            <span class="ms-3">{{ cliente.nome }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if cliente.website %}
+                                            <a href="{{ cliente.website }}" target="_blank" class="text-decoration-none">
+                                                {{ cliente.website }}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="confirmarExclusao('{{ cliente.id }}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             {% else %}
-                <tr>
-                    <td colspan="3" class="text-center py-4">
-                        <div class="empty-state">
-                            <i class="bi bi-people text-muted display-4"></i>
-                            <p class="mt-2 text-muted">Nenhum cliente cadastrado ainda.</p>
-                            <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#novoClienteModal">
-                                Adicionar Cliente
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                <div class="text-center py-5">
+                    <i class="bi bi-people display-1 text-muted mb-4"></i>
+                    <h4 class="text-muted">Nenhum cliente cadastrado</h4>
+                    <p class="text-muted mb-4">Comece adicionando seu primeiro cliente!</p>
+                    <a href="{{ url_for('novo_cliente') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-2"></i>Adicionar Cliente
+                    </a>
+                </div>
             {% endif %}
-        </tbody>
-    </table>
-</div>
-
-<!-- Modal Novo Cliente -->
-<div class="modal fade" id="novoClienteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Novo Cliente</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ url_for('novo_cliente') }}" method="post">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="nome" class="form-label">Nome do Cliente</label>
-                        <input type="text" class="form-control" id="nome" name="nome" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="website" class="form-label">Website</label>
-                        <input type="url" class="form-control" id="website" name="website" placeholder="https://">
-                    </div>
-                    <div class="mb-3">
-                        <label for="descricao" class="form-label">Descrição</label>
-                        <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
-
-<!-- Modal Editar Cliente -->
-<div class="modal fade" id="editarClienteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Editar Cliente</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="formEditarCliente" method="post">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="editNome" class="form-label">Nome do Cliente</label>
-                        <input type="text" class="form-control" id="editNome" name="nome" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editWebsite" class="form-label">Website</label>
-                        <input type="url" class="form-control" id="editWebsite" name="website" placeholder="https://">
-                    </div>
-                    <div class="mb-3">
-                        <label for="editDescricao" class="form-label">Descrição</label>
-                        <textarea class="form-control" id="editDescricao" name="descricao" rows="3"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
-function editarCliente(id, nome, website, descricao) {
-    document.getElementById('editNome').value = nome;
-    document.getElementById('editWebsite').value = website;
-    document.getElementById('editDescricao').value = descricao;
-    document.getElementById('formEditarCliente').action = `/cliente/${id}/editar`;
-    new bootstrap.Modal(document.getElementById('editarClienteModal')).show();
-}
-
-function excluirCliente(id) {
+function confirmarExclusao(clienteId) {
     if (confirm('Tem certeza que deseja excluir este cliente?')) {
-        fetch(`/cliente/${id}/excluir`, {
+        fetch(`/cliente/${clienteId}/excluir`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(response => {
-            if (response.ok) {
-                window.location.reload();
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
             } else {
                 alert('Erro ao excluir cliente');
             }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao excluir cliente');
         });
     }
 }
