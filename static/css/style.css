@@ -648,11 +648,9 @@ body {
 }
 
 .login-container {
-    background: rgba(255, 255, 255, 0.95);
+    background: #ffffff;
     border-radius: 24px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    padding: 3.5rem;
     width: 100%;
     margin: 0 auto;
     position: relative;
@@ -665,12 +663,13 @@ body {
         max-width: 1000px;
         display: grid;
         grid-template-columns: 1.2fr 1fr;
-        gap: 3rem;
-        padding: 0;
+        gap: 0;
     }
 
     .login-content {
+        background: #ffffff;
         padding: 3.5rem;
+        border-radius: 24px 0 0 24px;
     }
 
     .login-image {
@@ -682,6 +681,7 @@ body {
         padding: 3.5rem;
         position: relative;
         overflow: hidden;
+        border-radius: 0 24px 24px 0;
     }
 
     .login-image::before {
@@ -709,6 +709,14 @@ body {
         text-align: center;
         max-width: 400px;
         line-height: 1.6;
+    }
+}
+
+/* Versão Mobile */
+@media (max-width: 991.98px) {
+    .login-container {
+        padding: 2.5rem;
+        margin: 1rem;
     }
 }
 
@@ -749,13 +757,13 @@ body {
     height: auto;
     font-size: 15px;
     transition: all 0.2s ease;
-    background: rgba(255, 255, 255, 0.9);
+    background: #ffffff;
 }
 
 .login-form .form-control:focus {
     border-color: #0061f2;
     box-shadow: 0 0 0 3px rgba(0, 97, 242, 0.1);
-    background: #fff;
+    background: #ffffff;
 }
 
 .login-btn {
