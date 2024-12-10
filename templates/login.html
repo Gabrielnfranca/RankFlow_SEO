@@ -12,43 +12,49 @@
     <div class="login-page">
         <div class="container">
             <div class="login-container">
-                <div class="text-center">
-                    <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="RankFlow Logo" class="login-logo">
-                    <h1 class="login-title">RankFlow</h1>
-                    <p class="login-subtitle">Monitore seus rankings com precisão</p>
+                <div class="login-content">
+                    <div class="text-center">
+                        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="RankFlow Logo" class="login-logo">
+                        <h1 class="login-title">RankFlow</h1>
+                        <p class="login-subtitle">Monitore seus rankings com precisão</p>
+                    </div>
+
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('login', next=request.args.get('next', '')) }}" class="login-form">
+                        <div class="mb-4">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required 
+                                   placeholder="Digite seu email">
+                        </div>
+                        <div class="mb-4">
+                            <label for="senha" class="form-label">Senha</label>
+                            <input type="password" class="form-control" id="senha" name="senha" required 
+                                   placeholder="Digite sua senha">
+                        </div>
+                        {% if request.args.get('next') %}
+                            <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+                        {% endif %}
+                        <button type="submit" class="btn login-btn">Entrar</button>
+                        
+                        <div class="login-links">
+                            <p class="mb-0">Não tem uma conta? <a href="{{ url_for('cadastro') }}">Cadastre-se</a></p>
+                        </div>
+                    </form>
                 </div>
-
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST" action="{{ url_for('login', next=request.args.get('next', '')) }}" class="login-form">
-                    <div class="mb-4">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required 
-                               placeholder="Digite seu email">
-                    </div>
-                    <div class="mb-4">
-                        <label for="senha" class="form-label">Senha</label>
-                        <input type="password" class="form-control" id="senha" name="senha" required 
-                               placeholder="Digite sua senha">
-                    </div>
-                    {% if request.args.get('next') %}
-                        <input type="hidden" name="next" value="{{ request.args.get('next') }}">
-                    {% endif %}
-                    <button type="submit" class="btn login-btn">Entrar</button>
-                    
-                    <div class="login-links">
-                        <p class="mb-0">Não tem uma conta? <a href="{{ url_for('cadastro') }}">Cadastre-se</a></p>
-                    </div>
-                </form>
+                <div class="login-image d-none d-lg-flex">
+                    <h2>Bem-vindo ao RankFlow</h2>
+                    <p>Gerencie e monitore suas estratégias de SEO de forma eficiente e profissional. Acompanhe seus rankings, analise métricas e tome decisões baseadas em dados.</p>
+                </div>
             </div>
         </div>
     </div>
