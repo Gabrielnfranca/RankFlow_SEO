@@ -29,7 +29,7 @@
                                 {% endfor %}
                             {% endif %}
                         {% endwith %}
-                        <form method="POST" action="{{ url_for('login') }}">
+                        <form method="POST" action="{{ url_for('login', next=request.args.get('next', '')) }}">
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
                                 <input type="email" class="form-control" id="email" name="email" required>
@@ -38,6 +38,9 @@
                                 <label for="senha" class="form-label">Senha</label>
                                 <input type="password" class="form-control" id="senha" name="senha" required>
                             </div>
+                            {% if request.args.get('next') %}
+                            <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+                            {% endif %}
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">Entrar</button>
                             </div>

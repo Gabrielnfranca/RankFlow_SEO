@@ -9,7 +9,10 @@ import logging
 # Configuração de logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -203,33 +206,49 @@ def load_user(user_id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
+    try:
+        if current_user.is_authenticated:
+            return redirect(url_for('dashboard'))
 
-    if request.method == 'POST':
-        email = request.form.get('email')
-        senha = request.form.get('senha')
+        # Captura e sanitiza o parâmetro next
+        next_page = request.args.get('next', '')
+        logger.info(f"Parâmetro next recebido: {next_page}")
         
-        if not email or not senha:
-            flash('Por favor, preencha todos os campos.', 'error')
-            return render_template('login.html')
+        # Sanitiza o next_page para evitar redirecionamentos maliciosos
+        if next_page and not next_page.startswith('/'):
+            logger.warning(f"Tentativa de redirecionamento inválido: {next_page}")
+            next_page = ''
+
+        if request.method == 'POST':
+            email = request.form.get('email')
+            senha = request.form.get('senha')
+            
+            if not email or not senha:
+                flash('Por favor, preencha todos os campos.', 'error')
+                return render_template('login.html', next=next_page)
+            
+            try:
+                user = Usuario.query.filter_by(email=email).first()
+                
+                if user and check_password_hash(user.senha, senha):
+                    login_user(user)
+                    
+                    if next_page:
+                        logger.info(f"Redirecionando para: {next_page}")
+                        return redirect(next_page)
+                    return redirect(url_for('dashboard'))
+                
+                flash('Email ou senha inválidos.', 'error')
+            except Exception as e:
+                logger.error(f"Erro no login: {str(e)}")
+                flash('Ocorreu um erro ao tentar fazer login. Por favor, tente novamente.', 'error')
         
-        try:
-            user = Usuario.query.filter_by(email=email).first()
-            
-            if user and check_password_hash(user.senha, senha):
-                login_user(user)
-                next_page = request.args.get('next')
-                if next_page and next_page.startswith('/'):
-                    return redirect(next_page)
-                return redirect(url_for('dashboard'))
-            
-            flash('Email ou senha inválidos.', 'error')
-        except Exception as e:
-            logger.error(f"Erro no login: {str(e)}")
-            flash('Ocorreu um erro ao tentar fazer login. Por favor, tente novamente.', 'error')
+        return render_template('login.html', next=next_page)
     
-    return render_template('login.html')
+    except Exception as e:
+        logger.error(f"Erro inesperado na rota de login: {str(e)}", exc_info=True)
+        flash('Ocorreu um erro inesperado. Por favor, tente novamente.', 'error')
+        return render_template('login.html'), 500
 
 @app.route('/logout')
 @login_required
