@@ -2,6 +2,8 @@
 
 {% block title %}Dashboard{% endblock %}
 
+{% block header_title %}Meus Clientes{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-4 py-4">
     <div class="row mb-4">
@@ -60,6 +62,11 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="btn-group">
+                                            <a href="{{ url_for('detalhe_cliente', id=cliente.id) }}" 
+                                               class="btn btn-sm btn-outline-info" 
+                                               title="Ver detalhes">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
                                             <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
