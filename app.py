@@ -432,6 +432,33 @@ def atualizar_status_seo_tecnico():
         app.logger.error(f"Erro ao atualizar status: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 400
 
+@app.route('/cliente/<int:cliente_id>/seo-roadmap')
+@login_required
+def seo_roadmap(cliente_id):
+    try:
+        # Verificar se o cliente existe e pertence ao usuário atual
+        cliente = Cliente.query.filter_by(id=cliente_id, usuario_id=current_user.id).first()
+        if not cliente:
+            flash('Cliente não encontrado.', 'danger')
+            return redirect(url_for('dashboard'))
+            
+        logger.info(f"Acessando SEO Roadmap do cliente {cliente_id}")
+        
+        # Buscar etapas e progresso
+        etapas = EtapaSEO.query.order_by(EtapaSEO.ordem).all()
+        progresso = ProgressoSEO.query.filter_by(cliente_id=cliente_id).all()
+        
+        return render_template('seo_roadmap.html',
+            cliente=cliente,
+            etapas=etapas,
+            progresso=progresso
+        )
+        
+    except Exception as e:
+        logger.error(f"Erro ao carregar SEO Roadmap do cliente {cliente_id}: {str(e)}")
+        flash('Erro ao carregar o módulo SEO Roadmap.', 'danger')
+        return redirect(url_for('detalhe_cliente', id=cliente_id))
+
 @login_manager.user_loader
 def load_user(user_id):
     try:

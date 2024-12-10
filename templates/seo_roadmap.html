@@ -3,110 +3,21 @@
 {% block title %}SEO Roadmap - {{ cliente.nome }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="d-flex align-items-center gap-3">
-                <h1 class="h3 mb-0">SEO Roadmap</h1>
-                <div class="progress flex-grow-1" style="width: 200px; height: 8px;">
-                    <div class="progress-bar" role="progressbar" style="width: {{ '%.1f'|format(progresso_geral) }}%">
-                        <span class="visually-hidden">{{ '%.1f'|format(progresso_geral) }}%</span>
-                    </div>
-                </div>
-                <span class="text-muted">{{ '%.1f'|format(progresso_geral) }}%</span>
-            </div>
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">SEO Roadmap</h1>
+            <p class="text-muted">Planejamento SEO para {{ cliente.nome }}</p>
         </div>
+    </div>
 
-        {% for categoria, etapas in etapas_por_categoria.items() %}
-        <div class="card mb-4">
-            <div class="card-header d-flex align-items-center">
-                <h5 class="card-title mb-0">
-                    {% if categoria == 'tecnico' %}
-                        <i class="bi bi-gear-fill me-2"></i>SEO Técnico
-                    {% elif categoria == 'pesquisa' %}
-                        <i class="bi bi-search me-2"></i>Pesquisa e Análise
-                    {% elif categoria == 'conteudo' %}
-                        <i class="bi bi-file-text-fill me-2"></i>Conteúdo
-                    {% elif categoria == 'links' %}
-                        <i class="bi bi-link-45deg me-2"></i>Link Building
-                    {% elif categoria == 'monitoramento' %}
-                        <i class="bi bi-graph-up me-2"></i>Monitoramento
-                    {% endif %}
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="list-group">
-                    {% for etapa in etapas %}
-                    <div class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <h6 class="mb-0">{{ etapa.titulo }}</h6>
-                                {% if etapa.status == 'concluida' %}
-                                <span class="badge bg-success">Concluída</span>
-                                {% endif %}
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-primary" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#novaTarefaModal"
-                                        data-etapa-id="{{ etapa.id }}"
-                                        data-etapa-titulo="{{ etapa.titulo }}">
-                                    <i class="bi bi-plus-lg"></i> Nova Tarefa
-                                </button>
-                                {% if etapa.status != 'concluida' %}
-                                <button class="btn btn-sm btn-success" 
-                                        onclick="atualizarProgressoSEO({{ cliente.id }}, {{ etapa.id }}, 'concluida')">
-                                    <i class="bi bi-check-lg"></i> Concluir Etapa
-                                </button>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Lista de tarefas -->
-                        {% if etapa.tarefas %}
-                        <div class="list-group list-group-flush">
-                            {% for tarefa in etapa.tarefas %}
-                            <div class="list-group-item px-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <h6 class="mb-1">{{ tarefa.titulo }}</h6>
-                                            {% if tarefa.status == 'concluida' %}
-                                            <span class="badge bg-success">Concluída</span>
-                                            {% endif %}
-                                        </div>
-                                        {% if tarefa.responsavel %}
-                                        <small class="text-muted">Responsável: {{ tarefa.responsavel }}</small>
-                                        {% endif %}
-                                    </div>
-                                    <div class="btn-group">
-                                        {% if tarefa.status != 'concluida' %}
-                                        <button class="btn btn-sm btn-outline-success"
-                                                onclick="atualizarStatusTarefa({{ cliente.id }}, {{ tarefa.id }}, 'concluida')">
-                                            <i class="bi bi-check-lg"></i>
-                                        </button>
-                                        {% endif %}
-                                        <button class="btn btn-sm btn-outline-danger"
-                                                onclick="removerTarefa({{ cliente.id }}, {{ tarefa.id }})">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                {% if tarefa.descricao %}
-                                <p class="mb-1 mt-2">{{ tarefa.descricao | nl2br }}</p>
-                                {% endif %}
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% else %}
-                        <p class="text-muted mb-0">Nenhuma tarefa cadastrada</p>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Módulo SEO Roadmap em desenvolvimento. Em breve você poderá acompanhar todo o progresso do seu projeto aqui.
             </div>
         </div>
-        {% endfor %}
     </div>
 </div>
 {% endblock %}
