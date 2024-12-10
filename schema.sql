@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS tarefa (
 );
 
 -- Categorias de checklist SEO Técnico
-CREATE TABLE seo_tecnico_categorias (
+CREATE TABLE IF NOT EXISTS seo_tecnico_categorias (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
     descricao TEXT,
@@ -41,7 +41,7 @@ CREATE TABLE seo_tecnico_categorias (
 );
 
 -- Itens do checklist
-CREATE TABLE seo_tecnico_items (
+CREATE TABLE IF NOT EXISTS seo_tecnico_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     categoria_id INTEGER NOT NULL,
     nome TEXT NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE seo_tecnico_items (
 );
 
 -- Status dos itens por cliente
-CREATE TABLE seo_tecnico_status (
+CREATE TABLE IF NOT EXISTS seo_tecnico_status (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     cliente_id INTEGER NOT NULL,
     item_id INTEGER NOT NULL,
@@ -65,8 +65,8 @@ CREATE TABLE seo_tecnico_status (
     FOREIGN KEY (item_id) REFERENCES seo_tecnico_items (id)
 );
 
--- Inserir categorias padrão
-INSERT INTO seo_tecnico_categorias (nome, descricao, ordem) VALUES
+-- Inserir categorias padrão somente se não existirem
+INSERT OR IGNORE INTO seo_tecnico_categorias (nome, descricao, ordem) VALUES
 ('Análise Técnica Inicial', 'Verificações técnicas básicas e essenciais', 1),
 ('Performance do Site', 'Análise e otimização de desempenho', 2),
 ('Estrutura do Site', 'Organização e arquitetura da informação', 3),
@@ -75,8 +75,8 @@ INSERT INTO seo_tecnico_categorias (nome, descricao, ordem) VALUES
 ('Experiência do Usuário', 'Métricas e análise de experiência', 6),
 ('Segurança e Conformidade', 'Verificações de segurança e compliance', 7);
 
--- Inserir itens padrão
-INSERT INTO seo_tecnico_items (categoria_id, nome, descricao, documentacao_url, ordem) VALUES
+-- Inserir itens padrão somente se não existirem
+INSERT OR IGNORE INTO seo_tecnico_items (categoria_id, nome, descricao, documentacao_url, ordem) VALUES
 -- Análise Técnica Inicial
 (1, 'Verificação de robots.txt', 'Verificar configuração e regras do robots.txt', 'https://developers.google.com/search/docs/advanced/robots/intro', 1),
 (1, 'Análise do sitemap.xml', 'Verificar estrutura e URLs no sitemap', 'https://developers.google.com/search/docs/advanced/sitemaps/overview', 2),
