@@ -90,9 +90,16 @@ def init_app(app):
             db.create_all()
             logger.info("Tabelas criadas com sucesso!")
             
-            # Executa as migrações para garantir que todas as colunas existam
-            from migrations import run_migrations
-            run_migrations()
+            try:
+                # Executa as migrações para garantir que todas as colunas existam
+                from migrations import run_migrations
+                run_migrations()
+                logger.info("Migrações executadas com sucesso!")
+            except ImportError:
+                logger.warning("Módulo de migrações não encontrado. Continuando sem executar migrações.")
+            except Exception as e:
+                logger.error(f"Erro ao executar migrações: {str(e)}")
+                logger.error("Continuando a inicialização mesmo com erro nas migrações...")
             
             # Verifica se já existe um usuário admin
             admin = Usuario.query.filter_by(email='admin@admin.com').first()
@@ -113,7 +120,9 @@ def init_app(app):
             logger.error(f"Erro durante a inicialização: {str(e)}")
             if hasattr(e, '__cause__'):
                 logger.error(f"Causa do erro: {e.__cause__}")
-            raise
+            db.session.rollback()
+            # Não vamos levantar a exceção para permitir que a aplicação continue
+            logger.warning("Continuando a inicialização mesmo com erros...")
 
 # Inicializa o app
 init_app(app)
