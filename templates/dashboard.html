@@ -13,6 +13,17 @@
     </div>
 </div>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
 <div class="table-responsive">
     <table class="table">
         <thead>
@@ -29,47 +40,28 @@
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="client-avatar">{{ cliente.nome[:2].upper() }}</div>
-                            <div class="ms-3">
-                                <h6 class="mb-0">{{ cliente.nome }}</h6>
-                            </div>
+                            <span class="ms-2">{{ cliente.nome }}</span>
                         </div>
                     </td>
-                    <td>
-                        {% if cliente.website %}
-                        <a href="{{ cliente.website }}" target="_blank" class="text-decoration-none text-secondary">
-                            <i class="bi bi-globe2 me-2"></i>{{ cliente.website }}
-                        </a>
-                        {% else %}
-                        <span class="text-muted">Não informado</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ url_for('cliente_detalhes', cliente_id=cliente.id) }}" class="btn btn-light btn-sm">
-                                <i class="bi bi-eye-fill"></i>
-                                <span>Visualizar</span>
-                            </a>
-                            <button class="btn btn-light btn-sm" onclick="editarCliente({{ cliente.id }}, '{{ cliente.nome }}', '{{ cliente.website }}', '{{ cliente.descricao }}')">
-                                <i class="bi bi-pencil-fill"></i>
-                                <span>Editar</span>
-                            </button>
-                            <button class="btn btn-light btn-sm text-danger" onclick="excluirCliente({{ cliente.id }})">
-                                <i class="bi bi-trash-fill"></i>
-                                <span>Excluir</span>
-                            </button>
-                        </div>
+                    <td>{{ cliente.website or '-' }}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="editarCliente('{{ cliente.id }}', '{{ cliente.nome }}', '{{ cliente.website or '' }}', '{{ cliente.descricao or '' }}')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="excluirCliente('{{ cliente.id }}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}
             {% else %}
                 <tr>
-                    <td colspan="3">
+                    <td colspan="3" class="text-center py-4">
                         <div class="empty-state">
-                            <img src="{{ url_for('static', filename='images/empty-state.svg') }}" alt="Sem clientes">
-                            <h3>Nenhum cliente encontrado</h3>
-                            <p>Comece adicionando seu primeiro cliente!</p>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoClienteModal">
-                                <i class="bi bi-plus-lg me-2"></i>Adicionar Cliente
+                            <i class="bi bi-people text-muted display-4"></i>
+                            <p class="mt-2 text-muted">Nenhum cliente cadastrado ainda.</p>
+                            <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#novoClienteModal">
+                                Adicionar Cliente
                             </button>
                         </div>
                     </td>

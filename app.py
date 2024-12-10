@@ -121,8 +121,17 @@ def index():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    clientes = Cliente.query.filter_by(usuario_id=current_user.id).all()
-    return render_template('dashboard.html', clientes=clientes)
+    try:
+        logger.info(f"Acessando dashboard para o usuário {current_user.id}")
+        clientes = Cliente.query.filter_by(usuario_id=current_user.id).all()
+        logger.info(f"Encontrados {len(clientes)} clientes")
+        return render_template('dashboard.html', clientes=clientes)
+    except Exception as e:
+        logger.error(f"Erro ao acessar dashboard: {str(e)}", exc_info=True)
+        if hasattr(e, '__cause__'):
+            logger.error(f"Causa do erro: {e.__cause__}")
+        flash('Ocorreu um erro ao carregar o dashboard. Por favor, tente novamente.', 'error')
+        return render_template('dashboard.html', clientes=[]), 500
 
 @app.route('/cliente/novo', methods=['GET', 'POST'])
 @login_required
