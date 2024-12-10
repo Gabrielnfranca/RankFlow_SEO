@@ -841,3 +841,9 @@ body {
     color: white;
     border-color: rgba(254, 226, 226, 0.3);
 }
+
+.alert-success {
+    background: rgba(110, 231, 183, 0.1);
+    color: white;
+    border-color: rgba(110, 231, 183, 0.3);
+}

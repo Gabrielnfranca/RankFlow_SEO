@@ -350,8 +350,10 @@ def cadastro():
             try:
                 db.session.add(novo_usuario)
                 db.session.commit()
-                flash('Cadastro realizado com sucesso! Por favor, faça login.', 'success')
-                return redirect(url_for('login'))
+                # Faz login automático após o cadastro
+                login_user(novo_usuario)
+                flash('Cadastro realizado com sucesso!', 'success')
+                return redirect(url_for('dashboard'))
             except Exception as e:
                 db.session.rollback()
                 logger.error(f"Erro ao criar usuário: {str(e)}")
