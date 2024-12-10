@@ -29,6 +29,8 @@ body {
     min-height: 100vh;
     margin: 0;
     padding: 0;
+    display: flex;
+    min-height: 100vh;
 }
 
 /* Layout Base */
@@ -40,7 +42,7 @@ body {
 }
 
 /* Sidebar */
-#sidebar {
+.sidebar {
     width: var(--sidebar-width);
     height: 100vh;
     position: fixed;
@@ -48,7 +50,8 @@ body {
     top: 0;
     background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: white;
-    transition: all var(--transition-speed);
+    display: flex;
+    flex-direction: column;
     z-index: 1000;
     box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
 }
@@ -69,6 +72,7 @@ body {
 .sidebar-header span {
     font-size: 1.25rem;
     font-weight: 600;
+    color: white;
 }
 
 .sidebar-menu {
@@ -98,12 +102,11 @@ body {
 }
 
 /* Main Content */
-#content {
+.main-content {
     margin-left: var(--sidebar-width);
-    min-height: 100vh;
-    background-color: var(--background-color);
-    transition: all var(--transition-speed);
+    flex: 1;
     padding: 2rem;
+    background-color: var(--light-bg);
 }
 
 /* Top Navigation */
@@ -124,12 +127,8 @@ body {
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    transition: transform var(--transition-speed);
     height: 100%;
-}
-
-.dashboard-card:hover {
-    transform: translateY(-5px);
+    margin-bottom: 1rem;
 }
 
 .dashboard-card .card-header {
@@ -143,34 +142,16 @@ body {
     padding: 1.25rem;
 }
 
-/* Estatísticas */
-.stats-card {
-    padding: 1.5rem;
-    border-radius: 10px;
-    color: white;
-    height: 100%;
-}
-
-.stats-card.primary {
-    background: linear-gradient(45deg, var(--primary-color), var(--info-color));
-}
-
-.stats-card.success {
-    background: linear-gradient(45deg, var(--success-color), var(--info-color));
-}
-
-.stats-card.warning {
-    background: linear-gradient(45deg, var(--warning-color), var(--primary-color));
-}
-
 /* Tabelas */
 .table-responsive {
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
 }
 
 .custom-table {
+    width: 100%;
     margin: 0;
 }
 
@@ -197,22 +178,23 @@ body {
     justify-content: center;
     border-radius: 8px;
     transition: all var(--transition-speed);
+    margin: 0 0.25rem;
 }
 
 /* Responsividade */
 @media (max-width: 768px) {
-    #sidebar {
+    .sidebar {
         transform: translateX(-100%);
     }
-
-    #sidebar.active {
+    
+    .sidebar.show {
         transform: translateX(0);
     }
-
-    #content {
+    
+    .main-content {
         margin-left: 0;
     }
-
+    
     .top-nav {
         padding: 0 1rem;
     }
