@@ -147,38 +147,43 @@ def dashboard():
         flash('Ocorreu um erro ao carregar o dashboard. Por favor, tente novamente.', 'error')
         return render_template('dashboard.html', clientes=[]), 500
 
-@app.route('/cliente/novo', methods=['GET', 'POST'])
+@app.route('/cliente/<int:id>')
+@login_required
+def detalhe_cliente(id):
+    cliente = Cliente.query.get_or_404(id)
+    return render_template('detalhe_cliente.html', cliente=cliente)
+
+@app.route('/novo-cliente', methods=['GET', 'POST'])
 @login_required
 def novo_cliente():
-    try:
-        if request.method == 'POST':
-            nome = request.form.get('nome')
-            website = request.form.get('website')
-            descricao = request.form.get('descricao')
+    if request.method == 'POST':
+        nome = request.form.get('nome')
+        website = request.form.get('website')
+        descricao = request.form.get('descricao')
 
-            if not nome:
-                flash('O nome do cliente é obrigatório.', 'danger')
-                return render_template('novo_cliente.html')
+        if not nome:
+            flash('O nome do cliente é obrigatório.', 'danger')
+            return redirect(url_for('novo_cliente'))
 
-            cliente = Cliente(
-                nome=nome,
-                website=website,
-                descricao=descricao,
-                usuario_id=current_user.id
-            )
+        cliente = Cliente(
+            nome=nome,
+            website=website,
+            descricao=descricao,
+            usuario_id=current_user.id
+        )
 
+        try:
             db.session.add(cliente)
             db.session.commit()
+            flash('Cliente cadastrado com sucesso!', 'success')
+            return redirect(url_for('detalhe_cliente', id=cliente.id))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Erro ao cadastrar cliente: {str(e)}")
+            flash('Erro ao cadastrar cliente. Por favor, tente novamente.', 'danger')
+            return redirect(url_for('novo_cliente'))
 
-            flash('Cliente adicionado com sucesso!', 'success')
-            return redirect(url_for('dashboard'))
-
-        return render_template('novo_cliente.html')
-    except Exception as e:
-        logger.error(f"Erro ao adicionar cliente: {str(e)}", exc_info=True)
-        db.session.rollback()
-        flash('Erro ao adicionar cliente. Por favor, tente novamente.', 'danger')
-        return render_template('novo_cliente.html')
+    return render_template('novo_cliente.html')
 
 @app.route('/cliente/<int:id>/editar', methods=['GET', 'POST'])
 @login_required
