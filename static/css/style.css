@@ -1,11 +1,11 @@
 /* Variáveis Globais */
 :root {
-    --primary-color: #2fc6f6;
-    --secondary-color: #3bc8f5;
+    --primary-color: #0061f2;
+    --secondary-color: #6ea8fe;
     --accent-color: #bbed21;
-    --dark-blue: #333;
-    --text-color: #535c69;
-    --sidebar-bg: #3e4a56;
+    --dark-blue: #1a1f36;
+    --text-color: #1a1f36;
+    --sidebar-bg: #ffffff;
     --header-height: 60px;
     --sidebar-width: 240px;
     --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
@@ -16,7 +16,7 @@ body {
     font-family: 'Open Sans', 'Helvetica Neue', sans-serif;
     margin: 0;
     padding: 0;
-    background: #eef2f4;
+    background: #ffffff;
     color: var(--text-color);
     display: flex;
     min-height: 100vh;
@@ -31,7 +31,7 @@ body {
     left: 0;
     top: 0;
     background: var(--sidebar-bg);
-    color: #fff;
+    color: #1a1f36;
     display: flex;
     flex-direction: column;
     z-index: 1000;
@@ -43,7 +43,7 @@ body {
     padding: 0 20px;
     display: flex;
     align-items: center;
-    background: rgba(82, 92, 105, 0.15);
+    background: rgba(255, 255, 255, 0.15);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -56,7 +56,7 @@ body {
 .sidebar-header span {
     font-size: 18px;
     font-weight: 600;
-    color: #fff;
+    color: #1a1f36;
 }
 
 .sidebar-menu {
@@ -78,7 +78,7 @@ body {
 .sidebar-menu li a:hover,
 .sidebar-menu li.active a {
     background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: #1a1f36;
 }
 
 .sidebar-menu li a i {
@@ -92,14 +92,14 @@ body {
 .main-content {
     margin-left: var(--sidebar-width);
     flex: 1;
-    background: #eef2f4;
+    background: #ffffff;
     min-height: 100vh;
 }
 
 /* Header */
 .top-header {
     height: var(--header-height);
-    background: #fff;
+    background: #ffffff;
     box-shadow: var(--box-shadow);
     padding: 0 30px;
     display: flex;
@@ -112,7 +112,7 @@ body {
 
 /* Cards */
 .dashboard-card {
-    background: #fff;
+    background: #ffffff;
     border-radius: 8px;
     box-shadow: var(--box-shadow);
     margin-bottom: 20px;
@@ -141,7 +141,7 @@ body {
 .btn-primary {
     background: var(--primary-color);
     border-color: var(--primary-color);
-    color: #fff;
+    color: #ffffff;
     padding: 8px 16px;
     border-radius: 4px;
     transition: all 0.2s ease;
@@ -160,7 +160,7 @@ body {
 
 .table th {
     font-weight: 600;
-    color: #525c69;
+    color: #1a1f36;
     border-bottom: 1px solid #eef2f4;
     padding: 15px 20px;
 }
@@ -182,7 +182,7 @@ body {
     font-size: 14px;
     font-weight: 600;
     background: var(--primary-color);
-    color: #fff;
+    color: #ffffff;
 }
 
 /* Responsividade */
@@ -252,7 +252,7 @@ body {
 
 .components li a {
     padding: 0.875rem 1.5rem;
-    color: var(--text-secondary);
+    color: var(--text-color);
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -663,13 +663,11 @@ body {
         max-width: 1000px;
         display: grid;
         grid-template-columns: 1.2fr 1fr;
-        gap: 0;
     }
 
     .login-content {
         background: #ffffff;
         padding: 3.5rem;
-        border-radius: 24px 0 0 24px;
     }
 
     .login-image {
@@ -681,7 +679,6 @@ body {
         padding: 3.5rem;
         position: relative;
         overflow: hidden;
-        border-radius: 0 24px 24px 0;
     }
 
     .login-image::before {
@@ -701,6 +698,8 @@ body {
         font-weight: 700;
         margin-bottom: 1.5rem;
         text-align: center;
+        position: relative;
+        z-index: 1;
     }
 
     .login-image p {
@@ -709,6 +708,8 @@ body {
         text-align: center;
         max-width: 400px;
         line-height: 1.6;
+        position: relative;
+        z-index: 1;
     }
 }
 
@@ -717,6 +718,7 @@ body {
     .login-container {
         padding: 2.5rem;
         margin: 1rem;
+        background: #ffffff;
     }
 }
 
