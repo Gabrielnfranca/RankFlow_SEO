@@ -15,8 +15,8 @@
                 <div class="login-content">
                     <div class="text-center">
                         <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="RankFlow Logo" class="login-logo">
-                        <h1 class="login-title">RankFlow</h1>
-                        <p class="login-subtitle">Monitore seus rankings com precisão</p>
+                        <h1 class="login-title">Cadastro</h1>
+                        <p class="login-subtitle">Crie sua conta no RankFlow</p>
                     </div>
 
                     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -34,24 +34,24 @@
                         <div class="mb-4">
                             <label for="nome" class="form-label">Nome</label>
                             <input type="text" class="form-control" id="nome" name="nome" required 
-                                   placeholder="Digite seu nome">
+                                   placeholder="Digite seu nome completo">
                         </div>
                         <div class="mb-4">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="email" name="email" required 
-                                   placeholder="Digite seu email">
+                                   placeholder="Digite seu melhor email">
                         </div>
                         <div class="mb-4">
                             <label for="senha" class="form-label">Senha</label>
                             <input type="password" class="form-control" id="senha" name="senha" required 
-                                   placeholder="Digite sua senha">
+                                   placeholder="Crie uma senha forte">
                         </div>
                         <div class="mb-4">
                             <label for="confirmar_senha" class="form-label">Confirmar Senha</label>
                             <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" required 
                                    placeholder="Confirme sua senha">
                         </div>
-                        <button type="submit" class="btn login-btn">Cadastrar</button>
+                        <button type="submit" class="btn login-btn">Criar Conta</button>
                         
                         <div class="login-links">
                             <p class="mb-0">Já tem uma conta? <a href="{{ url_for('login') }}">Faça login</a></p>
