@@ -93,25 +93,26 @@ class ProgressoSEO(db.Model):
     observacoes = db.Column(db.Text)
 
 class SeoTecnicoCategoria(db.Model):
-    __tablename__ = 'seo_tecnico_categoria'
+    __tablename__ = 'seo_tecnico_categorias'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     descricao = db.Column(db.Text)
     ordem = db.Column(db.Integer)
 
 class SeoTecnicoItem(db.Model):
-    __tablename__ = 'seo_tecnico_item'
+    __tablename__ = 'seo_tecnico_items'
     id = db.Column(db.Integer, primary_key=True)
-    categoria_id = db.Column(db.Integer, db.ForeignKey('seo_tecnico_categoria.id'), nullable=False)
+    categoria_id = db.Column(db.Integer, db.ForeignKey('seo_tecnico_categorias.id'), nullable=False)
     nome = db.Column(db.String(100), nullable=False)
     descricao = db.Column(db.Text)
+    documentacao_url = db.Column(db.String(255))
     ordem = db.Column(db.Integer)
 
 class SeoTecnicoStatus(db.Model):
     __tablename__ = 'seo_tecnico_status'
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
-    item_id = db.Column(db.Integer, db.ForeignKey('seo_tecnico_item.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('seo_tecnico_items.id'), nullable=False)
     status = db.Column(db.String(20), default='pendente')
     prioridade = db.Column(db.String(20), default='media')
     observacoes = db.Column(db.Text)
