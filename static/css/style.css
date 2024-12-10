@@ -284,6 +284,68 @@ body {
     color: var(--text-color);
 }
 
+/* SEO Técnico */
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.stat-icon i {
+    font-size: 24px;
+}
+
+.progress-card {
+    transition: transform 0.2s;
+}
+
+.progress-card:hover {
+    transform: translateY(-5px);
+}
+
+.checklist-item {
+    border: 1px solid #dee2e6;
+    transition: all 0.2s;
+}
+
+.checklist-item:hover {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.checklist-item.border-success {
+    border-left: 4px solid var(--bs-success);
+}
+
+.checklist-item.border-warning {
+    border-left: 4px solid var(--bs-warning);
+}
+
+.checklist-item.border-secondary {
+    border-left: 4px solid var(--bs-secondary);
+}
+
+.avatar-lg {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-title {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+}
+
 /* Timeline */
 .timeline {
     position: relative;

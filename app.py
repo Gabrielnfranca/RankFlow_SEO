@@ -385,19 +385,16 @@ def health_check():
 @login_required
 def seo_tecnico(cliente_id):
     try:
-        # Verificar se o cliente pertence ao usuário atual
-        cliente = Cliente.query.filter_by(id=cliente_id, usuario_id=current_user.id).first_or_404()
+        # Buscar o cliente
+        cliente = Cliente.query.get_or_404(cliente_id)
         
-        app.logger.info(f"Acessando SEO Técnico para cliente {cliente_id}")
+        # Buscar todas as categorias
+        categorias = SeoTecnicoCategoria.query.all()
         
-        # Buscar todas as categorias ordenadas
-        categorias = db.session.query(SeoTecnicoCategoria).order_by(SeoTecnicoCategoria.ordem).all()
-        app.logger.info(f"Categorias encontradas: {len(categorias)}")
-        
-        # Inicializar dicionário para armazenar itens por categoria
+        # Dicionário para armazenar os itens e seus status por categoria
         itens_status = {}
         
-        # Contadores para status e prioridades
+        # Contadores para o dashboard
         completed_count = 0
         in_progress_count = 0
         pending_count = 0
@@ -406,34 +403,37 @@ def seo_tecnico(cliente_id):
         low_priority_count = 0
         total_items = 0
         
-        # Para cada categoria, buscar seus itens e status
+        # Para cada categoria, buscar os itens e seus status
         for categoria in categorias:
-            app.logger.info(f"Processando categoria {categoria.nome}")
-            # Buscar itens da categoria
-            itens = db.session.query(SeoTecnicoItem).filter_by(categoria_id=categoria.id).order_by(SeoTecnicoItem.ordem).all()
-            app.logger.info(f"Itens encontrados para categoria {categoria.nome}: {len(itens)}")
+            itens = SeoTecnicoItem.query.filter_by(categoria_id=categoria.id).all()
             itens_status[categoria.id] = []
             
             for item in itens:
-                app.logger.info(f"Processando item {item.nome}")
-                # Buscar ou criar status para este item
+                # Buscar o status do item para este cliente
                 status = SeoTecnicoStatus.query.filter_by(
                     cliente_id=cliente_id,
                     item_id=item.id
                 ).first()
                 
+                # Se não existir status, criar um novo com valores padrão
                 if not status:
-                    app.logger.info(f"Criando novo status para item {item.nome}")
                     status = SeoTecnicoStatus(
                         cliente_id=cliente_id,
                         item_id=item.id,
                         status='pendente',
-                        prioridade='media'
+                        prioridade='baixa'
                     )
                     db.session.add(status)
                     db.session.commit()
                 
+                # Adicionar à lista de itens da categoria
+                itens_status[categoria.id].append({
+                    'item': item,
+                    'status': status
+                })
+                
                 # Atualizar contadores
+                total_items += 1
                 if status.status == 'concluido':
                     completed_count += 1
                 elif status.status == 'em_progresso':
@@ -447,38 +447,33 @@ def seo_tecnico(cliente_id):
                     medium_priority_count += 1
                 else:
                     low_priority_count += 1
-                
-                total_items += 1
-                
-                # Adicionar item e seu status à lista da categoria
-                itens_status[categoria.id].append({
-                    'item': item,
-                    'status': status
-                })
         
-        # Calcular progresso
+        # Calcular progresso geral
         progress = int((completed_count / total_items * 100) if total_items > 0 else 0)
         
-        app.logger.info(f"SEO Técnico carregado com sucesso. Total de itens: {total_items}, Progresso: {progress}%")
+        app.logger.info(f'SEO Técnico carregado para cliente {cliente.nome}')
+        app.logger.info(f'Total de itens: {total_items}')
+        app.logger.info(f'Concluídos: {completed_count}')
+        app.logger.info(f'Em progresso: {in_progress_count}')
+        app.logger.info(f'Pendentes: {pending_count}')
         
         return render_template('seo_tecnico.html',
-            cliente=cliente,
-            categorias=categorias,
-            itens_status=itens_status,
-            progress=progress,
-            completed_count=completed_count,
-            in_progress_count=in_progress_count,
-            pending_count=pending_count,
-            high_priority_count=high_priority_count,
-            medium_priority_count=medium_priority_count,
-            low_priority_count=low_priority_count
-        )
-        
+                             cliente=cliente,
+                             categorias=categorias,
+                             itens_status=itens_status,
+                             completed_count=completed_count,
+                             in_progress_count=in_progress_count,
+                             pending_count=pending_count,
+                             high_priority_count=high_priority_count,
+                             medium_priority_count=medium_priority_count,
+                             low_priority_count=low_priority_count,
+                             total_items=total_items,
+                             progress=progress)
+    
     except Exception as e:
-        app.logger.error(f"Erro ao carregar SEO Técnico para cliente {cliente_id}: {str(e)}")
-        app.logger.error(f"Detalhes do erro: {type(e).__name__} - {str(e)}")
-        flash('Erro ao carregar o módulo SEO Técnico.', 'danger')
-        return redirect(url_for('detalhe_cliente', id=cliente_id))
+        app.logger.error(f'Erro ao carregar SEO Técnico: {str(e)}')
+        flash('Erro ao carregar a página de SEO Técnico', 'error')
+        return redirect(url_for('dashboard'))
 
 @app.route('/api/seo-tecnico/atualizar-status', methods=['POST'])
 @login_required
