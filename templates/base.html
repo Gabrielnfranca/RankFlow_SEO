@@ -35,6 +35,12 @@
                 </a>
             </li>
             <li>
+                <a href="{{ url_for('seo_tecnico', cliente_id=cliente.id) if cliente is defined else '#' }}">
+                    <i class="bi bi-tools"></i>
+                    <span>SEO Técnico</span>
+                </a>
+            </li>
+            <li>
                 <a href="#">
                     <i class="bi bi-gear"></i>
                     <span>Configurações</span>
