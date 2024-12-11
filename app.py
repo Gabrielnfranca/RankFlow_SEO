@@ -224,9 +224,10 @@ def add_security_and_compression_headers(response):
     return response
 
 @app.route('/')
-@login_required
 def index():
-    return redirect(url_for('dashboard'))
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
 
 @app.route('/dashboard')
 @login_required
@@ -238,8 +239,6 @@ def dashboard():
         ).filter_by(usuario_id=current_user.id).all()
         
         total_clientes = len(clientes)
-        
-        # Estatísticas em cache
         stats = {}
         
         return render_template('dashboard.html', 
@@ -249,7 +248,7 @@ def dashboard():
     except Exception as e:
         logger.error(f"Erro no dashboard: {str(e)}")
         flash('Erro ao carregar o dashboard', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('login'))
 
 @app.route('/clientes')
 @login_required
