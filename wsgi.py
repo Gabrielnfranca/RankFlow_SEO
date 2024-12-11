@@ -15,9 +15,7 @@ except Exception as e:
     logger.error(f"Erro ao inicializar a aplicação: {str(e)}")
     raise
 
-# Configuração da porta
-port = int(os.environ.get("PORT", 8000))
-logger.info(f"Configurando aplicação para usar a porta {port}")
-
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    logger.info(f"Iniciando servidor na porta {port}")
     app.run(host='0.0.0.0', port=port)
