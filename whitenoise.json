@@ -1,0 +1,23 @@
+{
+    "static_files": {
+        "static/css": {
+            "headers": {
+                "Cache-Control": "public, max-age=31536000",
+                "Vary": "Accept-Encoding"
+            },
+            "gzip": true
+        },
+        "static/js": {
+            "headers": {
+                "Cache-Control": "public, max-age=31536000",
+                "Vary": "Accept-Encoding"
+            },
+            "gzip": true
+        },
+        "static/images": {
+            "headers": {
+                "Cache-Control": "public, max-age=31536000"
+            }
+        }
+    }
+}

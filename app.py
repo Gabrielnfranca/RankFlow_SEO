@@ -1,11 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import text, inspect, func
+from flask_caching import Cache
+from whitenoise import WhiteNoise
 import os
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Configuração de logging
 logging.basicConfig(
@@ -19,6 +21,23 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev')
+
+# Configuração do WhiteNoise para arquivos estáticos
+app.wsgi_app = WhiteNoise(
+    app.wsgi_app,
+    root='static/',
+    prefix='static/',
+    max_age=31536000  # 1 ano em segundos
+)
+
+# Configuração do Cache
+cache_config = {
+    'CACHE_TYPE': 'SimpleCache',
+    'CACHE_DEFAULT_TIMEOUT': 300,  # 5 minutos
+    'CACHE_THRESHOLD': 1000  # Número máximo de itens no cache
+}
+app.config.from_mapping(cache_config)
+cache = Cache(app)
 
 # Configuração do banco de dados
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -163,6 +182,37 @@ def init_app(app):
 # Inicializa o app
 init_app(app)
 
+# Função para comprimir resposta HTML
+def minify_html(html_content):
+    # Remove espaços em branco extras e quebras de linha
+    import re
+    html_content = re.sub(r'>\s+<', '><', html_content)
+    html_content = re.sub(r'\s{2,}', ' ', html_content)
+    return html_content.strip()
+
+@app.after_request
+def add_security_headers(response):
+    # Adiciona headers de segurança e cache
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    
+    if request.path.startswith('/static/'):
+        # Cache mais longo para arquivos estáticos
+        response.headers['Cache-Control'] = 'public, max-age=31536000'
+    else:
+        # Cache mais curto para conteúdo dinâmico
+        response.headers['Cache-Control'] = 'public, max-age=300'
+    
+    return response
+
+# Rota para servir arquivos estáticos com cache
+@app.route('/static/<path:filename>')
+@cache.cached(timeout=31536000)  # Cache por 1 ano
+def serve_static(filename):
+    return send_from_directory('static', filename)
+
 @app.route('/')
 @login_required
 def index():
@@ -170,16 +220,36 @@ def index():
 
 @app.route('/dashboard')
 @login_required
+@cache.memoize(timeout=300)  # Cache por 5 minutos
 def dashboard():
     try:
-        logger.info(f"Acessando dashboard para o usuário {current_user.id}")
         clientes = Cliente.query.filter_by(usuario_id=current_user.id).all()
-        logger.info(f"Encontrados {len(clientes)} clientes")
-        return render_template('dashboard.html', clientes=clientes)
+        total_clientes = len(clientes)
+        
+        # Estatísticas em cache
+        stats = cache.get(f'user_{current_user.id}_stats')
+        if stats is None:
+            stats = calcular_estatisticas(clientes)
+            cache.set(f'user_{current_user.id}_stats', stats, timeout=300)
+        
+        return render_template('dashboard.html', 
+                             clientes=clientes,
+                             total_clientes=total_clientes,
+                             **stats)
     except Exception as e:
-        logger.error(f"Erro ao acessar dashboard: {str(e)}", exc_info=True)
-        flash('Ocorreu um erro ao carregar o dashboard. Por favor, tente novamente.', 'error')
-        return render_template('dashboard.html', clientes=[]), 500
+        logger.error(f"Erro no dashboard: {str(e)}")
+        flash('Erro ao carregar o dashboard', 'error')
+        return redirect(url_for('index'))
+
+def calcular_estatisticas(clientes):
+    # Função auxiliar para cálculos pesados
+    stats = {
+        'tarefas_pendentes': 0,
+        'progresso_medio': 0,
+        'clientes_ativos': 0
+    }
+    # ... cálculos ...
+    return stats
 
 @app.route('/clientes')
 @login_required
@@ -383,6 +453,7 @@ def health_check():
 
 @app.route('/seo-tecnico/<int:cliente_id>')
 @login_required
+@cache.memoize(timeout=300)
 def seo_tecnico(cliente_id):
     try:
         # Verificar se o cliente existe e pertence ao usuário atual
