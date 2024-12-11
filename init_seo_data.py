@@ -1,5 +1,4 @@
-from app import app, db
-from models import SeoTecnicoCategoria, SeoTecnicoItem
+from app import app, db, SeoTecnicoCategoria, SeoTecnicoItem
 
 def init_seo_data():
     with app.app_context():
