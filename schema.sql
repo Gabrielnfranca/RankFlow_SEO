@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS seo_tecnico_item (
     categoria_id INTEGER NOT NULL,
     nome TEXT NOT NULL,
     descricao TEXT,
-    documentacao_url TEXT,
+    documentacao_url VARCHAR(255),
     ordem INTEGER NOT NULL,
     FOREIGN KEY (categoria_id) REFERENCES seo_tecnico_categoria (id)
 );
