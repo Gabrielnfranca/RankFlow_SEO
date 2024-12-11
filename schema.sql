@@ -11,10 +11,11 @@ CREATE TABLE IF NOT EXISTS usuario (
 CREATE TABLE IF NOT EXISTS cliente (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER NOT NULL,
-    nome TEXT NOT NULL,
-    website TEXT,
+    nome VARCHAR(80) NOT NULL,
+    website VARCHAR(200),
     descricao TEXT,
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuario (id)
 );
 
