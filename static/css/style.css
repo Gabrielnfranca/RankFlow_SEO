@@ -481,6 +481,7 @@ body {
     width: 100%;
     max-width: 400px;
     padding: 2rem;
+    margin: 0 auto;
 }
 
 .login-content {
@@ -520,6 +521,7 @@ body {
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     font-size: 14px;
+    width: 100%;
 }
 
 .login-form .form-control:focus {
@@ -534,6 +536,7 @@ body {
     font-weight: 600;
     width: 100%;
     margin-top: 1rem;
+    font-size: 16px;
 }
 
 .login-form .btn-primary:hover {
@@ -553,6 +556,176 @@ body {
 
 .login-links a:hover {
     text-decoration: underline;
+}
+
+/* Media Queries para Responsividade */
+@media (max-width: 576px) {
+    .login-container {
+        padding: 1.5rem;
+        margin: 1rem;
+        max-width: 100%;
+    }
+
+    .login-logo {
+        width: 48px;
+        height: 48px;
+    }
+
+    .login-title {
+        font-size: 20px;
+    }
+
+    .login-subtitle {
+        font-size: 14px;
+        margin-bottom: 1.5rem;
+    }
+
+    .login-form {
+        margin-top: 1.5rem;
+    }
+
+    .login-form .form-control {
+        padding: 0.6rem 0.8rem;
+        font-size: 16px; /* Maior em mobile para melhor legibilidade */
+    }
+
+    .login-form .btn-primary {
+        padding: 0.6rem 1.2rem;
+    }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+    .login-container {
+        max-width: 90%;
+        padding: 2rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+    .login-container {
+        max-width: 80%;
+        padding: 2.5rem;
+    }
+}
+
+@media (min-width: 993px) {
+    .login-container {
+        max-width: 400px;
+        padding: 2.5rem;
+    }
+}
+
+/* Ajustes para telas muito pequenas */
+@media (max-height: 600px) {
+    .login-page {
+        padding: 10px;
+    }
+
+    .login-container {
+        padding: 1rem;
+    }
+
+    .login-logo {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 0.5rem;
+    }
+
+    .login-title {
+        font-size: 18px;
+        margin-bottom: 0.3rem;
+    }
+
+    .login-subtitle {
+        font-size: 13px;
+        margin-bottom: 1rem;
+    }
+
+    .login-form .form-control {
+        padding: 0.5rem 0.8rem;
+    }
+
+    .mb-4 {
+        margin-bottom: 0.8rem !important;
+    }
+}
+
+/* Ajustes para telas muito grandes */
+@media (min-width: 1200px) and (min-height: 800px) {
+    .login-container {
+        max-width: 450px;
+        padding: 3rem;
+    }
+
+    .login-logo {
+        width: 80px;
+        height: 80px;
+    }
+
+    .login-title {
+        font-size: 28px;
+    }
+
+    .login-subtitle {
+        font-size: 18px;
+    }
+
+    .login-form .form-control {
+        padding: 0.8rem 1.2rem;
+        font-size: 16px;
+    }
+
+    .login-form .btn-primary {
+        padding: 0.8rem 1.8rem;
+        font-size: 18px;
+    }
+}
+
+/* Ajustes para orientação paisagem em dispositivos móveis */
+@media (max-height: 500px) and (orientation: landscape) {
+    .login-page {
+        padding: 10px;
+        align-items: flex-start;
+    }
+
+    .login-container {
+        margin: 0.5rem auto;
+        padding: 1rem;
+    }
+
+    .login-logo {
+        width: 36px;
+        height: 36px;
+        margin-bottom: 0.3rem;
+    }
+
+    .login-title {
+        font-size: 16px;
+        margin-bottom: 0.2rem;
+    }
+
+    .login-subtitle {
+        font-size: 12px;
+        margin-bottom: 0.8rem;
+    }
+
+    .mb-4 {
+        margin-bottom: 0.6rem !important;
+    }
+
+    .login-form .form-control {
+        padding: 0.4rem 0.6rem;
+        font-size: 14px;
+    }
+
+    .login-form .btn-primary {
+        padding: 0.4rem 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .login-links {
+        margin-top: 0.8rem;
+    }
 }
 
 /* Ajuste para o body em páginas de login/cadastro */
