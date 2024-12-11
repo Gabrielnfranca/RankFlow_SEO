@@ -14,12 +14,19 @@ class Usuario(db.Model):
 class Cliente(db.Model):
     __tablename__ = 'cliente'
     id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
+    nome = db.Column(db.String(80), nullable=False)
     website = db.Column(db.String(200))
     descricao = db.Column(db.Text)
-    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     tarefas = db.relationship('Tarefa', backref='cliente', lazy=True)
+
+    def __init__(self, nome, website=None, descricao=None, usuario_id=None):
+        self.nome = nome
+        self.website = website
+        self.descricao = descricao
+        self.usuario_id = usuario_id
 
 class Tarefa(db.Model):
     __tablename__ = 'tarefa'
