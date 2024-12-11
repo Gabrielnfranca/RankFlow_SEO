@@ -1,0 +1,89 @@
+/* Otimizações de Performance */
+
+/* Lazy Loading */
+.lazy {
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+}
+
+.lazy.loaded {
+    opacity: 1;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* Content Placeholder */
+.content-placeholder {
+    background: #f0f0f0;
+    animation: placeholder-pulse 1.5s infinite;
+}
+
+@keyframes placeholder-pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+/* Otimizações de Fonte */
+@font-face {
+    font-display: swap;
+    font-family: 'System';
+    src: local(-apple-system), local(BlinkMacSystemFont), local('Segoe UI'),
+         local(Roboto), local(Oxygen-Sans), local(Ubuntu), local(Cantarell),
+         local('Helvetica Neue'), local(sans-serif);
+}
+
+/* Critical CSS */
+.sidebar,
+.main-content,
+.navbar {
+    will-change: transform;
+}
+
+/* Otimizações de Animação */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background: none !important;
+        color: black !important;
+    }
+    
+    a {
+        text-decoration: underline;
+    }
+    
+    @page {
+        margin: 2cm;
+    }
+}

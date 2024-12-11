@@ -1,3 +1,4 @@
+import os
 from app import app, db, init_db
 import logging
 
@@ -14,5 +15,9 @@ except Exception as e:
     logger.error(f"Erro ao inicializar a aplicação: {str(e)}")
     raise
 
+# Configuração da porta
+port = int(os.environ.get("PORT", 8000))
+logger.info(f"Configurando aplicação para usar a porta {port}")
+
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', port=port)
