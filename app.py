@@ -384,85 +384,92 @@ def health_check():
 @app.route('/seo-tecnico/<int:cliente_id>')
 @login_required
 def seo_tecnico(cliente_id):
-    # Verificar se o cliente existe e pertence ao usuário atual
-    cliente = Cliente.query.filter_by(id=cliente_id, usuario_id=current_user.id).first_or_404()
-    
-    # Buscar todas as categorias
-    categorias = SeoTecnicoCategoria.query.order_by(SeoTecnicoCategoria.ordem).all()
-    
-    # Dicionário para armazenar os itens e seus status
-    itens_status = {}
-    
-    # Contadores
-    completed_count = 0
-    in_progress_count = 0
-    pending_count = 0
-    high_priority_count = 0
-    medium_priority_count = 0
-    low_priority_count = 0
-    total_items = 0
-    
-    # Para cada categoria, buscar os itens e seus status
-    for categoria in categorias:
-        itens = SeoTecnicoItem.query.filter_by(categoria_id=categoria.id).all()
-        itens_status[categoria.id] = []
+    try:
+        # Verificar se o cliente existe e pertence ao usuário atual
+        cliente = Cliente.query.filter_by(id=cliente_id, usuario_id=current_user.id).first_or_404()
         
-        for item in itens:
-            # Buscar o status do item para este cliente
-            status = SeoTecnicoStatus.query.filter_by(
-                cliente_id=cliente_id,
-                item_id=item.id
-            ).first()
+        # Buscar todas as categorias
+        categorias = SeoTecnicoCategoria.query.order_by(SeoTecnicoCategoria.ordem).all()
+        
+        # Dicionário para armazenar os itens e seus status
+        itens_status = {}
+        
+        # Contadores
+        completed_count = 0
+        in_progress_count = 0
+        pending_count = 0
+        high_priority_count = 0
+        medium_priority_count = 0
+        low_priority_count = 0
+        total_items = 0
+        
+        # Para cada categoria, buscar os itens e seus status
+        for categoria in categorias:
+            itens = SeoTecnicoItem.query.filter_by(categoria_id=categoria.id).all()
+            itens_status[categoria.id] = []
             
-            # Se não existir status, criar um novo com valores padrão
-            if not status:
-                status = SeoTecnicoStatus(
+            for item in itens:
+                # Buscar o status do item para este cliente
+                status = SeoTecnicoStatus.query.filter_by(
                     cliente_id=cliente_id,
-                    item_id=item.id,
-                    status='pendente',
-                    prioridade='baixa'
-                )
-                db.session.add(status)
-        
-        # Fazer commit das mudanças após processar todos os itens de uma categoria
-        db.session.commit()
+                    item_id=item.id
+                ).first()
+                
+                # Se não existir status, criar um novo com valores padrão
+                if not status:
+                    status = SeoTecnicoStatus(
+                        cliente_id=cliente_id,
+                        item_id=item.id,
+                        status='pendente',
+                        prioridade='baixa'
+                    )
+                    db.session.add(status)
+                
+                # Adicionar à lista de itens da categoria
+                itens_status[categoria.id].append({
+                    'item': item,
+                    'status': status
+                })
+                
+                # Atualizar contadores
+                total_items += 1
+                if status.status == 'concluido':
+                    completed_count += 1
+                elif status.status == 'em_progresso':
+                    in_progress_count += 1
+                else:
+                    pending_count += 1
+                
+                if status.prioridade == 'alta':
+                    high_priority_count += 1
+                elif status.prioridade == 'media':
+                    medium_priority_count += 1
+                else:
+                    low_priority_count += 1
             
-        # Adicionar à lista de itens da categoria
-        itens_status[categoria.id].append({
-            'item': item,
-            'status': status
-        })
+            # Fazer commit das mudanças após processar todos os itens de uma categoria
+            db.session.commit()
         
-        # Atualizar contadores
-        total_items += 1
-        if status.status == 'concluido':
-            completed_count += 1
-        elif status.status == 'em_progresso':
-            in_progress_count += 1
-        else:
-            pending_count += 1
+        # Calcular progresso geral
+        progress = int((completed_count / total_items) * 100) if total_items > 0 else 0
         
-        if status.prioridade == 'alta':
-            high_priority_count += 1
-        elif status.prioridade == 'media':
-            medium_priority_count += 1
-        else:
-            low_priority_count += 1
-    
-    # Calcular progresso geral
-    progress = int((completed_count / total_items) * 100) if total_items > 0 else 0
-    
-    return render_template('seo_tecnico.html',
-                         cliente=cliente,
-                         categorias=categorias,
-                         itens_status=itens_status,
-                         completed_count=completed_count,
-                         in_progress_count=in_progress_count,
-                         pending_count=pending_count,
-                         high_priority_count=high_priority_count,
-                         medium_priority_count=medium_priority_count,
-                         low_priority_count=low_priority_count,
-                         progress=progress)
+        return render_template('seo_tecnico.html',
+                             cliente=cliente,
+                             categorias=categorias,
+                             itens_status=itens_status,
+                             completed_count=completed_count,
+                             in_progress_count=in_progress_count,
+                             pending_count=pending_count,
+                             high_priority_count=high_priority_count,
+                             medium_priority_count=medium_priority_count,
+                             low_priority_count=low_priority_count,
+                             progress=progress)
+    except Exception as e:
+        app.logger.error(f'Erro ao carregar SEO Técnico: {str(e)}')
+        return jsonify({
+            'error': str(e),
+            'type': str(type(e))
+        }), 500
 
 @app.route('/api/seo-tecnico/atualizar-status', methods=['POST'])
 @login_required
