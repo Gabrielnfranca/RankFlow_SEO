@@ -72,6 +72,11 @@ class Cliente(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    
+    # Relacionamentos
+    tarefas = db.relationship('Tarefa', backref='cliente', lazy=True)
+    progresso_seo = db.relationship('ProgressoSEO', backref='cliente', lazy=True)
+    seo_tecnico_status = db.relationship('SeoTecnicoStatus', backref='cliente', lazy=True)
 
     def __init__(self, nome, website=None, descricao=None, usuario_id=None):
         self.nome = nome
@@ -233,10 +238,8 @@ def index():
 @login_required
 def dashboard():
     try:
-        clientes = Cliente.query.options(
-            joinedload(Cliente.tarefas),
-            joinedload(Cliente.progresso_seo)
-        ).filter_by(usuario_id=current_user.id).all()
+        # Busca os clientes com seus relacionamentos
+        clientes = Cliente.query.filter_by(usuario_id=current_user.id).all()
         
         total_clientes = len(clientes)
         stats = {}
