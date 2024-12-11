@@ -114,6 +114,9 @@ class SeoTecnicoCategoria(db.Model):
     nome = db.Column(db.String(100), nullable=False)
     descricao = db.Column(db.Text)
     ordem = db.Column(db.Integer)
+    
+    # Relacionamento com itens
+    itens = db.relationship('SeoTecnicoItem', backref='categoria', lazy=True, order_by='SeoTecnicoItem.ordem')
 
 class SeoTecnicoItem(db.Model):
     __tablename__ = 'seo_tecnico_item'
