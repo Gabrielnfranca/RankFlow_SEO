@@ -388,8 +388,15 @@ def seo_tecnico(cliente_id):
         # Verificar se o cliente existe e pertence ao usuário atual
         cliente = Cliente.query.filter_by(id=cliente_id, usuario_id=current_user.id).first_or_404()
         
-        # Buscar todas as categorias
+        # Buscar todas as categorias ordenadas
         categorias = SeoTecnicoCategoria.query.order_by(SeoTecnicoCategoria.ordem).all()
+        
+        if not categorias:
+            # Se não houver categorias, executar init_seo_data
+            from init_seo_data import init_seo_data
+            init_seo_data()
+            # Buscar categorias novamente
+            categorias = SeoTecnicoCategoria.query.order_by(SeoTecnicoCategoria.ordem).all()
         
         # Dicionário para armazenar os itens e seus status
         itens_status = {}
@@ -452,6 +459,11 @@ def seo_tecnico(cliente_id):
         
         # Calcular progresso geral
         progress = int((completed_count / total_items) * 100) if total_items > 0 else 0
+        
+        app.logger.info(f'SEO Técnico - Cliente {cliente.nome}:')
+        app.logger.info(f'Categorias: {len(categorias)}')
+        app.logger.info(f'Total de itens: {total_items}')
+        app.logger.info(f'Progresso: {progress}%')
         
         return render_template('seo_tecnico.html',
                              cliente=cliente,
