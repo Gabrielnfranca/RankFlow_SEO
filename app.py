@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 import gzip
 from functools import wraps
 from sqlalchemy.orm import joinedload, lazyload
+import traceback
 
 # Configuração de logging
 logging.basicConfig(
@@ -463,58 +464,112 @@ def health_check():
 @login_required
 def seo_tecnico(cliente_id):
     try:
-        # Verificar se o cliente existe e pertence ao usuário atual
-        cliente = Cliente.query.options(
-            joinedload(Cliente.usuario)
-        ).get_or_404(cliente_id)
+        logger.info(f"Iniciando rota SEO Técnico para cliente_id: {cliente_id}")
+        logger.info(f"Usuário atual: {current_user.id}")
         
-        if cliente.usuario_id != current_user.id:
-            flash('Acesso não autorizado', 'error')
+        # Verificar se o cliente pertence ao usuário atual
+        cliente = Cliente.query.filter_by(id=cliente_id, usuario_id=current_user.id).first()
+        
+        if not cliente:
+            logger.error(f"Cliente {cliente_id} não encontrado ou não pertence ao usuário {current_user.id}")
+            flash('Cliente não encontrado ou sem permissão', 'error')
             return redirect(url_for('dashboard'))
         
-        # Buscar categorias com itens e seus status
-        categorias = SeoTecnicoCategoria.query.options(
-            joinedload(SeoTecnicoCategoria.itens).joinedload(SeoTecnicoItem.status)
-        ).order_by(SeoTecnicoCategoria.ordem).all()
+        logger.info(f"Cliente encontrado: {cliente.nome}")
         
-        data = []
+        # Buscar categorias e itens
+        categorias = SeoTecnicoCategoria.query.order_by(SeoTecnicoCategoria.ordem).all()
+        logger.info(f"Total de categorias: {len(categorias)}")
+        
+        dados_categorias = []
+        itens_status = {}
+        total_items = 0
+        completed_count = 0
+        in_progress_count = 0
+        high_priority_count = 0
+        
         for categoria in categorias:
-            status_items = []
-            for item in categoria.itens:
-                # Encontrar o status específico para este cliente
-                status = None
-                for s in item.status:
-                    if s.cliente_id == cliente_id:
-                        status = s
-                        break
+            logger.info(f"Processando categoria: {categoria.nome}")
+            
+            categoria_dados = {
+                'id': categoria.id,
+                'nome': categoria.nome,
+                'descricao': categoria.descricao,
+                'itens': []
+            }
+            
+            # Buscar itens da categoria
+            itens = SeoTecnicoItem.query.filter_by(categoria_id=categoria.id).order_by(SeoTecnicoItem.ordem).all()
+            logger.info(f"Total de itens na categoria {categoria.nome}: {len(itens)}")
+            
+            for item in itens:
+                total_items += 1
                 
-                # Se não existir status, criar um novo
+                # Buscar ou criar status do item
+                status = SeoTecnicoStatus.query.filter_by(
+                    cliente_id=cliente_id, 
+                    item_id=item.id
+                ).first()
+                
                 if not status:
                     status = SeoTecnicoStatus(
                         cliente_id=cliente_id,
-                        item_id=item.id
+                        item_id=item.id,
+                        status='pendente',
+                        prioridade='media'
                     )
                     db.session.add(status)
                 
-                status_items.append({
+                # Contadores de status
+                status_item = status.status
+                if status_item == 'concluido':
+                    completed_count += 1
+                elif status_item == 'em_progresso':
+                    in_progress_count += 1
+                
+                if status.prioridade == 'alta':
+                    high_priority_count += 1
+                
+                categoria_dados['itens'].append({
+                    'id': item.id,
+                    'nome': item.nome,
+                    'descricao': item.descricao,
+                    'documentacao_url': item.documentacao_url,
+                    'status': status_item
+                })
+                
+                # Adicionar status do item por categoria
+                if categoria.id not in itens_status:
+                    itens_status[categoria.id] = []
+                
+                itens_status[categoria.id].append({
                     'item': item,
                     'status': status
                 })
             
-            data.append({
-                'categoria': categoria,
-                'itens': status_items
-            })
+            dados_categorias.append(categoria_dados)
         
-        if db.session.is_active:
-            db.session.commit()
+        # Calcular progresso
+        progress = (completed_count / total_items * 100) if total_items > 0 else 0
+        
+        # Commit das alterações
+        db.session.commit()
+        
+        logger.info(f"Renderizando página SEO Técnico para cliente {cliente_id}")
+        logger.info(f"Métricas: Total={total_items}, Concluídos={completed_count}, Em Progresso={in_progress_count}, Alta Prioridade={high_priority_count}")
         
         return render_template('seo_tecnico.html', 
-                             cliente=cliente,
-                             categorias_data=data)
-                             
+                               cliente=cliente, 
+                               categorias=dados_categorias,
+                               itens_status=itens_status,
+                               progress=round(progress, 2),
+                               completed_count=completed_count,
+                               in_progress_count=in_progress_count,
+                               high_priority_count=high_priority_count,
+                               total_items=total_items)
     except Exception as e:
         logger.error(f"Erro em SEO Técnico: {str(e)}")
+        logger.error(f"Detalhes do erro: {traceback.format_exc()}")
         flash('Erro ao carregar SEO Técnico', 'error')
         return redirect(url_for('dashboard'))
 
@@ -564,6 +619,51 @@ def atualizar_status_seo_tecnico():
     except Exception as e:
         app.logger.error(f"Erro ao atualizar status: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/usuario/excluir', methods=['POST'])
+@login_required
+def excluir_usuario():
+    try:
+        # Excluir todos os dados relacionados ao usuário
+        # Primeiro, excluir registros dependentes
+        SeoTecnicoStatus.query.filter(SeoTecnicoStatus.cliente_id.in_(
+            db.session.query(Cliente.id).filter_by(usuario_id=current_user.id)
+        )).delete(synchronize_session=False)
+        
+        ProgressoSEO.query.filter(ProgressoSEO.cliente_id.in_(
+            db.session.query(Cliente.id).filter_by(usuario_id=current_user.id)
+        )).delete(synchronize_session=False)
+        
+        Tarefa.query.filter(Tarefa.cliente_id.in_(
+            db.session.query(Cliente.id).filter_by(usuario_id=current_user.id)
+        )).delete(synchronize_session=False)
+        
+        Cliente.query.filter_by(usuario_id=current_user.id).delete()
+        Usuario.query.filter_by(id=current_user.id).delete()
+        
+        db.session.commit()
+        logout_user()
+        
+        logger.info(f"Usuário {current_user.email} excluído com sucesso")
+        flash('Conta excluída com sucesso.', 'success')
+        return redirect(url_for('login'))
+    
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Erro ao excluir usuário: {str(e)}", exc_info=True)
+        flash('Erro ao excluir conta. Por favor, tente novamente.', 'danger')
+        return redirect(url_for('dashboard'))
+
+@app.route('/configuracoes', methods=['GET'])
+@login_required
+def configuracoes():
+    try:
+        logger.info(f"Carregando configurações para usuário {current_user.id}")
+        return render_template('configuracoes.html')
+    except Exception as e:
+        logger.error(f"Erro ao carregar configurações: {str(e)}", exc_info=True)
+        flash('Erro ao carregar configurações.', 'danger')
+        return redirect(url_for('dashboard'))
 
 @login_manager.user_loader
 def load_user(user_id):
