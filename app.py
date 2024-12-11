@@ -381,99 +381,88 @@ def health_check():
             'type': str(type(e))
         }), 500
 
-@app.route('/cliente/<int:cliente_id>/seo-tecnico')
+@app.route('/seo-tecnico/<int:cliente_id>')
 @login_required
 def seo_tecnico(cliente_id):
-    try:
-        # Buscar o cliente
-        cliente = Cliente.query.get_or_404(cliente_id)
-        
-        # Buscar todas as categorias
-        categorias = SeoTecnicoCategoria.query.all()
-        
-        # Dicionário para armazenar os itens e seus status por categoria
-        itens_status = {}
-        
-        # Contadores para o dashboard
-        completed_count = 0
-        in_progress_count = 0
-        pending_count = 0
-        high_priority_count = 0
-        medium_priority_count = 0
-        low_priority_count = 0
-        total_items = 0
-        
-        # Para cada categoria, buscar os itens e seus status
-        for categoria in categorias:
-            itens = SeoTecnicoItem.query.filter_by(categoria_id=categoria.id).all()
-            itens_status[categoria.id] = []
-            
-            for item in itens:
-                # Buscar o status do item para este cliente
-                status = SeoTecnicoStatus.query.filter_by(
-                    cliente_id=cliente_id,
-                    item_id=item.id
-                ).first()
-                
-                # Se não existir status, criar um novo com valores padrão
-                if not status:
-                    status = SeoTecnicoStatus(
-                        cliente_id=cliente_id,
-                        item_id=item.id,
-                        status='pendente',
-                        prioridade='baixa'
-                    )
-                    db.session.add(status)
-                    db.session.commit()
-                
-                # Adicionar à lista de itens da categoria
-                itens_status[categoria.id].append({
-                    'item': item,
-                    'status': status
-                })
-                
-                # Atualizar contadores
-                total_items += 1
-                if status.status == 'concluido':
-                    completed_count += 1
-                elif status.status == 'em_progresso':
-                    in_progress_count += 1
-                else:
-                    pending_count += 1
-                
-                if status.prioridade == 'alta':
-                    high_priority_count += 1
-                elif status.prioridade == 'media':
-                    medium_priority_count += 1
-                else:
-                    low_priority_count += 1
-        
-        # Calcular progresso geral
-        progress = int((completed_count / total_items * 100) if total_items > 0 else 0)
-        
-        app.logger.info(f'SEO Técnico carregado para cliente {cliente.nome}')
-        app.logger.info(f'Total de itens: {total_items}')
-        app.logger.info(f'Concluídos: {completed_count}')
-        app.logger.info(f'Em progresso: {in_progress_count}')
-        app.logger.info(f'Pendentes: {pending_count}')
-        
-        return render_template('seo_tecnico.html',
-                             cliente=cliente,
-                             categorias=categorias,
-                             itens_status=itens_status,
-                             completed_count=completed_count,
-                             in_progress_count=in_progress_count,
-                             pending_count=pending_count,
-                             high_priority_count=high_priority_count,
-                             medium_priority_count=medium_priority_count,
-                             low_priority_count=low_priority_count,
-                             total_items=total_items,
-                             progress=progress)
+    # Verificar se o cliente existe e pertence ao usuário atual
+    cliente = Cliente.query.filter_by(id=cliente_id, usuario_id=current_user.id).first_or_404()
     
-    except Exception as e:
-        app.logger.error(f'Erro ao carregar SEO Técnico: {str(e)}')
-        flash('Erro ao carregar a página de SEO Técnico', 'error')
-        return redirect(url_for('dashboard'))
+    # Buscar todas as categorias
+    categorias = SeoTecnicoCategoria.query.order_by(SeoTecnicoCategoria.ordem).all()
+    
+    # Dicionário para armazenar os itens e seus status
+    itens_status = {}
+    
+    # Contadores
+    completed_count = 0
+    in_progress_count = 0
+    pending_count = 0
+    high_priority_count = 0
+    medium_priority_count = 0
+    low_priority_count = 0
+    total_items = 0
+    
+    # Para cada categoria, buscar os itens e seus status
+    for categoria in categorias:
+        itens = SeoTecnicoItem.query.filter_by(categoria_id=categoria.id).all()
+        itens_status[categoria.id] = []
+        
+        for item in itens:
+            # Buscar o status do item para este cliente
+            status = SeoTecnicoStatus.query.filter_by(
+                cliente_id=cliente_id,
+                item_id=item.id
+            ).first()
+            
+            # Se não existir status, criar um novo com valores padrão
+            if not status:
+                status = SeoTecnicoStatus(
+                    cliente_id=cliente_id,
+                    item_id=item.id,
+                    status='pendente',
+                    prioridade='baixa'
+                )
+                db.session.add(status)
+        
+        # Fazer commit das mudanças após processar todos os itens de uma categoria
+        db.session.commit()
+            
+        # Adicionar à lista de itens da categoria
+        itens_status[categoria.id].append({
+            'item': item,
+            'status': status
+        })
+        
+        # Atualizar contadores
+        total_items += 1
+        if status.status == 'concluido':
+            completed_count += 1
+        elif status.status == 'em_progresso':
+            in_progress_count += 1
+        else:
+            pending_count += 1
+        
+        if status.prioridade == 'alta':
+            high_priority_count += 1
+        elif status.prioridade == 'media':
+            medium_priority_count += 1
+        else:
+            low_priority_count += 1
+    
+    # Calcular progresso geral
+    progress = int((completed_count / total_items) * 100) if total_items > 0 else 0
+    
+    return render_template('seo_tecnico.html',
+                         cliente=cliente,
+                         categorias=categorias,
+                         itens_status=itens_status,
+                         completed_count=completed_count,
+                         in_progress_count=in_progress_count,
+                         pending_count=pending_count,
+                         high_priority_count=high_priority_count,
+                         medium_priority_count=medium_priority_count,
+                         low_priority_count=low_priority_count,
+                         progress=progress)
 
 @app.route('/api/seo-tecnico/atualizar-status', methods=['POST'])
 @login_required
