@@ -1,13 +1,16 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import text, inspect, func
+from sqlalchemy import text, inspect, func, and_
 from flask_caching import Cache
 from whitenoise import WhiteNoise
 import os
 import logging
 from datetime import datetime, timedelta
+import gzip
+from functools import wraps
+from sqlalchemy.orm import joinedload, lazyload
 
 # Configuração de logging
 logging.basicConfig(
@@ -190,28 +193,46 @@ def minify_html(html_content):
     html_content = re.sub(r'\s{2,}', ' ', html_content)
     return html_content.strip()
 
+def gzip_response(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        response = make_response(f(*args, **kwargs))
+        if not request.path.startswith('/static/'):
+            accept_encoding = request.headers.get('Accept-Encoding', '')
+            if 'gzip' in accept_encoding:
+                content = gzip.compress(response.data)
+                response.data = content
+                response.headers['Content-Encoding'] = 'gzip'
+                response.headers['Vary'] = 'Accept-Encoding'
+                response.headers['Content-Length'] = len(content)
+        return response
+    return decorated_function
+
 @app.after_request
-def add_security_headers(response):
-    # Adiciona headers de segurança e cache
+def add_security_and_compression_headers(response):
+    # Headers de segurança existentes...
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     
+    # Compressão gzip para respostas não-estáticas
+    if not request.path.startswith('/static/'):
+        accept_encoding = request.headers.get('Accept-Encoding', '')
+        if 'gzip' in accept_encoding and len(response.data) > 500:
+            content = gzip.compress(response.data)
+            response.data = content
+            response.headers['Content-Encoding'] = 'gzip'
+            response.headers['Vary'] = 'Accept-Encoding'
+            response.headers['Content-Length'] = len(content)
+    
+    # Cache headers
     if request.path.startswith('/static/'):
-        # Cache mais longo para arquivos estáticos
         response.headers['Cache-Control'] = 'public, max-age=31536000'
     else:
-        # Cache mais curto para conteúdo dinâmico
         response.headers['Cache-Control'] = 'public, max-age=300'
     
     return response
-
-# Rota para servir arquivos estáticos com cache
-@app.route('/static/<path:filename>')
-@cache.cached(timeout=31536000)  # Cache por 1 ano
-def serve_static(filename):
-    return send_from_directory('static', filename)
 
 @app.route('/')
 @login_required
@@ -220,10 +241,15 @@ def index():
 
 @app.route('/dashboard')
 @login_required
-@cache.memoize(timeout=300)  # Cache por 5 minutos
+@cache.memoize(timeout=300)
+@gzip_response
 def dashboard():
     try:
-        clientes = Cliente.query.filter_by(usuario_id=current_user.id).all()
+        clientes = Cliente.query.options(
+            joinedload(Cliente.tarefas),
+            joinedload(Cliente.progresso_seo)
+        ).filter_by(usuario_id=current_user.id).all()
+        
         total_clientes = len(clientes)
         
         # Estatísticas em cache
@@ -240,16 +266,6 @@ def dashboard():
         logger.error(f"Erro no dashboard: {str(e)}")
         flash('Erro ao carregar o dashboard', 'error')
         return redirect(url_for('index'))
-
-def calcular_estatisticas(clientes):
-    # Função auxiliar para cálculos pesados
-    stats = {
-        'tarefas_pendentes': 0,
-        'progresso_medio': 0,
-        'clientes_ativos': 0
-    }
-    # ... cálculos ...
-    return stats
 
 @app.route('/clientes')
 @login_required
@@ -454,106 +470,62 @@ def health_check():
 @app.route('/seo-tecnico/<int:cliente_id>')
 @login_required
 @cache.memoize(timeout=300)
+@gzip_response
 def seo_tecnico(cliente_id):
     try:
         # Verificar se o cliente existe e pertence ao usuário atual
-        cliente = Cliente.query.filter_by(id=cliente_id, usuario_id=current_user.id).first_or_404()
+        cliente = Cliente.query.options(
+            joinedload(Cliente.usuario)
+        ).get_or_404(cliente_id)
         
-        # Buscar todas as categorias ordenadas
-        categorias = SeoTecnicoCategoria.query.order_by(SeoTecnicoCategoria.ordem).all()
+        if cliente.usuario_id != current_user.id:
+            flash('Acesso não autorizado', 'error')
+            return redirect(url_for('dashboard'))
         
-        if not categorias:
-            # Se não houver categorias, executar init_seo_data
-            from init_seo_data import init_seo_data
-            init_seo_data()
-            # Buscar categorias novamente
-            categorias = SeoTecnicoCategoria.query.order_by(SeoTecnicoCategoria.ordem).all()
+        # Cache de categorias e itens
+        cache_key = f'seo_tecnico_{cliente_id}'
+        data = cache.get(cache_key)
         
-        # Dicionário para armazenar os itens e seus status
-        itens_status = {}
-        
-        # Contadores
-        completed_count = 0
-        in_progress_count = 0
-        pending_count = 0
-        high_priority_count = 0
-        medium_priority_count = 0
-        low_priority_count = 0
-        total_items = 0
-        
-        # Para cada categoria, buscar os itens e seus status
-        for categoria in categorias:
-            itens = SeoTecnicoItem.query.filter_by(categoria_id=categoria.id).all()
-            itens_status[categoria.id] = []
+        if data is None:
+            # Otimização: Carregar todos os dados necessários em uma única query
+            categorias = SeoTecnicoCategoria.query.options(
+                joinedload(SeoTecnicoCategoria.itens).joinedload(SeoTecnicoItem.status)
+            ).order_by(SeoTecnicoCategoria.ordem).all()
             
-            for item in itens:
-                # Buscar o status do item para este cliente
-                status = SeoTecnicoStatus.query.filter_by(
-                    cliente_id=cliente_id,
-                    item_id=item.id
-                ).first()
+            data = []
+            for categoria in categorias:
+                status_items = []
+                for item in categoria.itens:
+                    status = next((s for s in item.status if s.cliente_id == cliente_id), None)
+                    if not status:
+                        status = SeoTecnicoStatus(
+                            cliente_id=cliente_id,
+                            item_id=item.id
+                        )
+                        db.session.add(status)
+                    
+                    status_items.append({
+                        'item': item,
+                        'status': status
+                    })
                 
-                # Se não existir status, criar um novo com valores padrão
-                if not status:
-                    status = SeoTecnicoStatus(
-                        cliente_id=cliente_id,
-                        item_id=item.id,
-                        status='pendente',
-                        prioridade='baixa'
-                    )
-                    db.session.add(status)
-                
-                # Adicionar à lista de itens da categoria
-                itens_status[categoria.id].append({
-                    'item': item,
-                    'status': status
+                data.append({
+                    'categoria': categoria,
+                    'itens': status_items
                 })
-                
-                # Atualizar contadores
-                total_items += 1
-                if status.status == 'concluido':
-                    completed_count += 1
-                elif status.status == 'em_progresso':
-                    in_progress_count += 1
-                else:
-                    pending_count += 1
-                
-                if status.prioridade == 'alta':
-                    high_priority_count += 1
-                elif status.prioridade == 'media':
-                    medium_priority_count += 1
-                else:
-                    low_priority_count += 1
             
-            # Fazer commit das mudanças após processar todos os itens de uma categoria
-            db.session.commit()
+            if db.session.is_active:
+                db.session.commit()
+            cache.set(cache_key, data, timeout=300)
         
-        # Calcular progresso geral
-        progress = int((completed_count / total_items) * 100) if total_items > 0 else 0
-        
-        app.logger.info(f'SEO Técnico - Cliente {cliente.nome}:')
-        app.logger.info(f'Categorias: {len(categorias)}')
-        app.logger.info(f'Total de itens: {total_items}')
-        app.logger.info(f'Progresso: {progress}%')
-        
-        return render_template('seo_tecnico.html',
+        return render_template('seo_tecnico.html', 
                              cliente=cliente,
-                             categorias=categorias,
-                             itens_status=itens_status,
-                             completed_count=completed_count,
-                             in_progress_count=in_progress_count,
-                             pending_count=pending_count,
-                             high_priority_count=high_priority_count,
-                             medium_priority_count=medium_priority_count,
-                             low_priority_count=low_priority_count,
-                             total_items=total_items,
-                             progress=progress)
+                             categorias_data=data)
+                             
     except Exception as e:
-        app.logger.error(f'Erro ao carregar SEO Técnico: {str(e)}')
-        return jsonify({
-            'error': str(e),
-            'type': str(type(e))
-        }), 500
+        logger.error(f"Erro em SEO Técnico: {str(e)}")
+        flash('Erro ao carregar SEO Técnico', 'error')
+        return redirect(url_for('dashboard'))
 
 @app.route('/api/seo-tecnico/atualizar-status', methods=['POST'])
 @login_required
@@ -716,4 +688,6 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 8000))
+    print(f"Starting server at port {port}")
+    app.run(host='0.0.0.0', port=port)

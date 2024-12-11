@@ -1,2 +1,1 @@
-release: python migrations/run_migrations.py && python init_seo_data.py
-web: gunicorn app:app
+web: gunicorn app:app --bind 0.0.0.0:$PORT
