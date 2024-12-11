@@ -126,6 +126,9 @@ class SeoTecnicoItem(db.Model):
     descricao = db.Column(db.Text)
     documentacao_url = db.Column(db.String(255))
     ordem = db.Column(db.Integer)
+    
+    # Relacionamento com status
+    status = db.relationship('SeoTecnicoStatus', backref='item', lazy=True)
 
 class SeoTecnicoStatus(db.Model):
     __tablename__ = 'seo_tecnico_status'
@@ -469,7 +472,7 @@ def seo_tecnico(cliente_id):
             flash('Acesso não autorizado', 'error')
             return redirect(url_for('dashboard'))
         
-        # Buscar categorias e itens
+        # Buscar categorias com itens e seus status
         categorias = SeoTecnicoCategoria.query.options(
             joinedload(SeoTecnicoCategoria.itens).joinedload(SeoTecnicoItem.status)
         ).order_by(SeoTecnicoCategoria.ordem).all()
@@ -478,7 +481,14 @@ def seo_tecnico(cliente_id):
         for categoria in categorias:
             status_items = []
             for item in categoria.itens:
-                status = next((s for s in item.status if s.cliente_id == cliente_id), None)
+                # Encontrar o status específico para este cliente
+                status = None
+                for s in item.status:
+                    if s.cliente_id == cliente_id:
+                        status = s
+                        break
+                
+                # Se não existir status, criar um novo
                 if not status:
                     status = SeoTecnicoStatus(
                         cliente_id=cliente_id,
