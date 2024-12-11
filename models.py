@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from app import db
 
 db = SQLAlchemy()
 
@@ -60,3 +61,39 @@ class ProgressoSEO(db.Model):
     observacoes = db.Column(db.Text)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
     data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class SeoTecnicoCategoria(db.Model):
+    __tablename__ = 'seo_tecnico_categoria'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.String(255))
+    ordem = db.Column(db.Integer, nullable=False)
+    itens = db.relationship('SeoTecnicoItem', backref='categoria', lazy=True)
+
+    def __repr__(self):
+        return f'<SeoTecnicoCategoria {self.nome}>'
+
+class SeoTecnicoItem(db.Model):
+    __tablename__ = 'seo_tecnico_item'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    categoria_id = db.Column(db.Integer, db.ForeignKey('seo_tecnico_categoria.id'), nullable=False)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.String(255))
+    documentacao_url = db.Column(db.String(255))
+    ordem = db.Column(db.Integer, nullable=False)
+
+    def __repr__(self):
+        return f'<SeoTecnicoItem {self.nome}>'
+
+class SeoTecnicoStatus(db.Model):
+    __tablename__ = 'seo_tecnico_status'
+    id = db.Column(db.Integer, primary_key=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('seo_tecnico_item.id'), nullable=False)
+    status = db.Column(db.String(20), default='pendente')
+    prioridade = db.Column(db.String(20), default='media')
+    observacoes = db.Column(db.Text)
+    data_verificacao = db.Column(db.DateTime)
+    data_atualizacao = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())

@@ -463,3 +463,100 @@ body {
 .progress-bar {
     transition: width 0.6s ease;
 }
+
+/* Estilos para Login e Cadastro */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2c5282 0%, #4a5568 100%);
+    padding: 20px;
+}
+
+.login-container {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
+}
+
+.login-content {
+    width: 100%;
+}
+
+.login-logo {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1rem;
+}
+
+.login-title {
+    color: var(--primary-color);
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+    color: var(--secondary-color);
+    font-size: 16px;
+    margin-bottom: 2rem;
+}
+
+.login-form {
+    margin-top: 2rem;
+}
+
+.login-form .form-label {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.login-form .form-control {
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.login-form .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.1);
+}
+
+.login-form .btn-primary {
+    background-color: var(--primary-color);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.login-form .btn-primary:hover {
+    background-color: #1a365d;
+}
+
+.login-links {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.login-links a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.login-links a:hover {
+    text-decoration: underline;
+}
+
+/* Ajuste para o body em páginas de login/cadastro */
+body.auth-page {
+    background: none;
+    display: block;
+}

@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body class="auth-page">
     <div class="login-page">
         <div class="container">
             <div class="login-container">
@@ -44,19 +44,14 @@
                         <div class="mb-4">
                             <label for="senha" class="form-label">Senha</label>
                             <input type="password" class="form-control" id="senha" name="senha" required 
-                                   placeholder="Crie uma senha forte">
+                                   placeholder="Digite sua senha">
                         </div>
-                        <div class="mb-4">
-                            <label for="confirmar_senha" class="form-label">Confirmar Senha</label>
-                            <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" required 
-                                   placeholder="Confirme sua senha">
-                        </div>
-                        <button type="submit" class="btn login-btn">Criar Conta</button>
-                        
-                        <div class="login-links">
-                            <p class="mb-0">Já tem uma conta? <a href="{{ url_for('login') }}">Faça login</a></p>
-                        </div>
+                        <button type="submit" class="btn btn-primary">Criar Conta</button>
                     </form>
+
+                    <div class="login-links">
+                        <p>Já tem uma conta? <a href="{{ url_for('login') }}">Faça login</a></p>
+                    </div>
                 </div>
                 <div class="login-image d-none d-lg-flex">
                     <h2>Bem-vindo ao RankFlow</h2>
