@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import text, inspect, func, and_
-from flask_caching import Cache
 from whitenoise import WhiteNoise
 import os
 import logging
@@ -29,18 +28,8 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev')
 app.wsgi_app = WhiteNoise(
     app.wsgi_app,
     root='static/',
-    prefix='static/',
-    max_age=31536000  # 1 ano em segundos
+    prefix='static/'
 )
-
-# Configuração do Cache
-cache_config = {
-    'CACHE_TYPE': 'SimpleCache',
-    'CACHE_DEFAULT_TIMEOUT': 300,  # 5 minutos
-    'CACHE_THRESHOLD': 1000  # Número máximo de itens no cache
-}
-app.config.from_mapping(cache_config)
-cache = Cache(app)
 
 # Configuração do banco de dados
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -241,8 +230,6 @@ def index():
 
 @app.route('/dashboard')
 @login_required
-@cache.memoize(timeout=300)
-@gzip_response
 def dashboard():
     try:
         clientes = Cliente.query.options(
@@ -253,10 +240,7 @@ def dashboard():
         total_clientes = len(clientes)
         
         # Estatísticas em cache
-        stats = cache.get(f'user_{current_user.id}_stats')
-        if stats is None:
-            stats = calcular_estatisticas(clientes)
-            cache.set(f'user_{current_user.id}_stats', stats, timeout=300)
+        stats = {}
         
         return render_template('dashboard.html', 
                              clientes=clientes,
@@ -469,8 +453,6 @@ def health_check():
 
 @app.route('/seo-tecnico/<int:cliente_id>')
 @login_required
-@cache.memoize(timeout=300)
-@gzip_response
 def seo_tecnico(cliente_id):
     try:
         # Verificar se o cliente existe e pertence ao usuário atual
@@ -482,41 +464,35 @@ def seo_tecnico(cliente_id):
             flash('Acesso não autorizado', 'error')
             return redirect(url_for('dashboard'))
         
-        # Cache de categorias e itens
-        cache_key = f'seo_tecnico_{cliente_id}'
-        data = cache.get(cache_key)
+        # Buscar categorias e itens
+        categorias = SeoTecnicoCategoria.query.options(
+            joinedload(SeoTecnicoCategoria.itens).joinedload(SeoTecnicoItem.status)
+        ).order_by(SeoTecnicoCategoria.ordem).all()
         
-        if data is None:
-            # Otimização: Carregar todos os dados necessários em uma única query
-            categorias = SeoTecnicoCategoria.query.options(
-                joinedload(SeoTecnicoCategoria.itens).joinedload(SeoTecnicoItem.status)
-            ).order_by(SeoTecnicoCategoria.ordem).all()
-            
-            data = []
-            for categoria in categorias:
-                status_items = []
-                for item in categoria.itens:
-                    status = next((s for s in item.status if s.cliente_id == cliente_id), None)
-                    if not status:
-                        status = SeoTecnicoStatus(
-                            cliente_id=cliente_id,
-                            item_id=item.id
-                        )
-                        db.session.add(status)
-                    
-                    status_items.append({
-                        'item': item,
-                        'status': status
-                    })
+        data = []
+        for categoria in categorias:
+            status_items = []
+            for item in categoria.itens:
+                status = next((s for s in item.status if s.cliente_id == cliente_id), None)
+                if not status:
+                    status = SeoTecnicoStatus(
+                        cliente_id=cliente_id,
+                        item_id=item.id
+                    )
+                    db.session.add(status)
                 
-                data.append({
-                    'categoria': categoria,
-                    'itens': status_items
+                status_items.append({
+                    'item': item,
+                    'status': status
                 })
             
-            if db.session.is_active:
-                db.session.commit()
-            cache.set(cache_key, data, timeout=300)
+            data.append({
+                'categoria': categoria,
+                'itens': status_items
+            })
+        
+        if db.session.is_active:
+            db.session.commit()
         
         return render_template('seo_tecnico.html', 
                              cliente=cliente,
