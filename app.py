@@ -463,6 +463,7 @@ def seo_tecnico(cliente_id):
                              high_priority_count=high_priority_count,
                              medium_priority_count=medium_priority_count,
                              low_priority_count=low_priority_count,
+                             total_items=total_items,
                              progress=progress)
     except Exception as e:
         app.logger.error(f'Erro ao carregar SEO Técnico: {str(e)}')
