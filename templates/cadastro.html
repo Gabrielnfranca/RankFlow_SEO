@@ -7,6 +7,41 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .auth-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .login-subtitle {
+            margin-bottom: 1.5rem;
+            color: #6c757d;
+        }
+        .login-form .form-control {
+            border-radius: 5px;
+        }
+        .login-links {
+            margin-top: 1rem;
+            text-align: center;
+        }
+    </style>
 </head>
 <body class="auth-page">
     <div class="login-page">
@@ -14,7 +49,7 @@
             <div class="login-container">
                 <div class="login-content">
                     <div class="text-center">
-                        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="RankFlow Logo" class="login-logo">
+                        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="RankFlow Logo" class="login-logo mb-3">
                         <h1 class="login-title">Cadastro</h1>
                         <p class="login-subtitle">Crie sua conta no RankFlow</p>
                     </div>
@@ -46,7 +81,7 @@
                             <input type="password" class="form-control" id="senha" name="senha" required 
                                    placeholder="Digite sua senha">
                         </div>
-                        <button type="submit" class="btn btn-primary">Criar Conta</button>
+                        <button type="submit" class="btn btn-primary w-100">Criar Conta</button>
                     </form>
 
                     <div class="login-links">
@@ -64,3 +99,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+</create_file>
+
+### Conclusão
+
+As melhorias foram aplicadas com sucesso no arquivo `cadastro.html`. Agora, a tela de cadastro deve ter uma aparência mais profissional, clean e responsiva.
+
+<attempt_completion>
+<result>
+As melhorias foram aplicadas com sucesso no arquivo `cadastro.html`. A tela de cadastro agora deve ter uma aparência mais profissional, clean e responsiva. Se precisar de mais alguma coisa, por favor, me avise!
+</result>
+</attempt_completion>
